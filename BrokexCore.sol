@@ -15,6 +15,20 @@ interface ISupraOraclePull {
     function verifyOracleProofV2(bytes calldata _bytesProof) external returns (PriceInfo memory);
 }
 
+interface IChainlinkAggregator {
+    function decimals() external view returns (uint8);
+    function latestRoundData()
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        );
+}
+
 interface IBrokexVault {
     function payTrader(address trader, uint256 amount) external;
     function lockedCapital() external view returns (uint256);
@@ -150,6 +164,13 @@ contract BrokexCore {
     mapping(address referrer => uint256 reward) public referralRewards;
     mapping(address trader => bool hasTraded) public hasOpenedPosition;
 
+    struct ChainlinkGuard {
+        address feed;
+        uint32 maxDeviation; // scale 1e6 (ex: 11_250 for 1.125%, 15_000 for 1.5%)
+    }
+
+    mapping(uint256 assetId => ChainlinkGuard) public chainlinkGuards;
+
     mapping(uint256 tradeId => Trade trade) public trades;
     uint256 public nextTradeId = 1;
     uint8 public securityMode;
@@ -160,6 +181,7 @@ contract BrokexCore {
     event AssetDelisted(uint256 indexed assetId, uint40 timestamp);
     event AssetConfigUpdated(uint256 indexed assetId, uint40 timestamp);
     event AssetSecurityModeUpdated(uint256 indexed assetId, uint8 newMode, uint40 timestamp);
+    event ChainlinkGuardUpdated(uint256 indexed assetId, address indexed feed, uint32 maxDeviation, uint40 timestamp);
 
     event TradeCreated(
         uint256 indexed tradeId,
@@ -344,6 +366,16 @@ contract BrokexCore {
         }
 
         emit AssetDelisted(assetId, uint40(block.timestamp));
+    }
+
+    function setChainlinkGuard(uint256 assetId, address feed, uint32 maxDeviation) external onlyOwner {
+        if (securityMode >= MODE_PAUSED) revert InvalidState();
+        if (maxDeviation > 100_000) revert InvalidInput(); // max 10%
+        chainlinkGuards[assetId] = ChainlinkGuard({
+            feed: feed,
+            maxDeviation: maxDeviation
+        });
+        emit ChainlinkGuardUpdated(assetId, feed, maxDeviation, uint40(block.timestamp));
     }
 
     function setReferralRewardRate(uint256 newRate) external onlyOwner {
@@ -1130,10 +1162,50 @@ contract BrokexCore {
                 }
 
                 if (normalizedPrice == 0) revert OracleUncertain();
+                _checkChainlinkSanity(assetId, normalizedPrice);
                 return (normalizedPrice, oracleTime);
             }
         }
         revert InvalidInput();
+    }
+
+    function _checkChainlinkSanity(uint256 assetId, uint256 supraPrice) internal view {
+        ChainlinkGuard memory guard = chainlinkGuards[assetId];
+        if (guard.feed == address(0)) return;
+
+        try IChainlinkAggregator(guard.feed).latestRoundData() returns (
+            uint80,
+            int256 answer,
+            uint256,
+            uint256 updatedAt,
+            uint80
+        ) {
+            if (answer <= 0 || updatedAt == 0) return;
+
+            uint8 clDecimals = 8;
+            try IChainlinkAggregator(guard.feed).decimals() returns (uint8 dec) {
+                clDecimals = dec;
+            } catch {}
+
+            uint256 chainlinkPrice;
+            if (clDecimals == 6) {
+                chainlinkPrice = uint256(answer);
+            } else if (clDecimals > 6) {
+                chainlinkPrice = uint256(answer) / (10 ** (clDecimals - 6));
+            } else {
+                chainlinkPrice = uint256(answer) * (10 ** (6 - clDecimals));
+            }
+
+            if (chainlinkPrice == 0) return;
+
+            uint256 diff = supraPrice > chainlinkPrice ? supraPrice - chainlinkPrice : chainlinkPrice - supraPrice;
+            uint256 divergence = (diff * PRECISION) / chainlinkPrice;
+
+            uint32 maxDev = guard.maxDeviation == 0 ? 15_000 : guard.maxDeviation;
+            if (divergence > maxDev) revert OracleUncertain();
+        } catch {
+            return;
+        }
     }
 
     function _getPriceFromInfo(ISupraOraclePull.PriceInfo memory info, uint256 assetId) internal view returns (uint256) {

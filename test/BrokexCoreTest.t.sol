@@ -93,6 +93,32 @@ contract MockVault {
     }
 }
 
+contract MockChainlinkFeed {
+    int256 public price;
+    uint8 public decimals = 8;
+    uint256 public updatedAt;
+
+    function setPrice(int256 p, uint8 d) external {
+        price = p;
+        decimals = d;
+        updatedAt = block.timestamp;
+    }
+
+    function latestRoundData()
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 _updatedAt,
+            uint80 answeredInRound
+        )
+    {
+        return (1, price, updatedAt, updatedAt, 1);
+    }
+}
+
 interface Vm {
     function warp(uint256) external;
     function prank(address) external;
@@ -755,5 +781,43 @@ contract BrokexCoreTest {
         );
         require(openShortSpreads.shortSpread >= 500, "Short spread must be at least minSpread");
         require(openShortSpreads.tradeSpread == openShortSpreads.shortSpread, "Trade spread for short open must match shortSpread");
+    }
+
+    function test_ChainlinkGuard_SuccessAndRevert() public {
+        MockChainlinkFeed cl = new MockChainlinkFeed();
+        // Supra gold price is 2500e6 ($2500.00)
+        // Chainlink feed with 8 decimals: $2500.00 -> 2500 * 1e8 = 250000000000
+        cl.setPrice(2500 * 1e8, 8);
+
+        // Configure guard with 1.125% max deviation (11_250 / 1e6)
+        core.setChainlinkGuard(FEED_GOLD, address(cl), 11_250);
+
+        // 1. Open market when Supra and Chainlink match -> SUCCESS
+        bytes[] memory emptyProof = new bytes[](1);
+        BrokexCore.MarketOrder memory req = BrokexCore.MarketOrder({
+            assetId: FEED_GOLD,
+            direction: 1,
+            collateral: 100e6,
+            leverage: 10,
+            stopLoss: 0,
+            takeProfit: 0,
+            referrer: address(0)
+        });
+
+        uint256 tradeId = core.openMarket(req, emptyProof);
+        require(tradeId > 0, "Trade must open when oracle prices match");
+
+        // 2. Modify Chainlink to diverge by 4% ($2600.00 vs $2500.00)
+        cl.setPrice(2600 * 1e8, 8);
+        bool revertedDivergence;
+        try core.openMarket(req, emptyProof) {} catch {
+            revertedDivergence = true;
+        }
+        require(revertedDivergence, "Must revert when divergence exceeds threshold");
+
+        // 3. Remove guard (address(0)) -> Must succeed even if divergent
+        core.setChainlinkGuard(FEED_GOLD, address(0), 0);
+        uint256 tradeId2 = core.openMarket(req, emptyProof);
+        require(tradeId2 > 0, "Must succeed when guard is removed");
     }
 }
