@@ -178,6 +178,7 @@ contract BrokexCore {
     }
 
     mapping(uint256 assetId => ChainlinkGuard) public chainlinkGuards;
+    mapping(uint256 assetId => bool) public marketClosed;
 
     mapping(uint256 tradeId => Trade trade) public trades;
     uint256 public nextTradeId = 1;
@@ -190,6 +191,7 @@ contract BrokexCore {
     event AssetConfigUpdated(uint256 indexed assetId, uint40 timestamp);
     event AssetSecurityModeUpdated(uint256 indexed assetId, uint8 newMode, uint40 timestamp);
     event ChainlinkGuardUpdated(uint256 indexed assetId, address indexed feed, uint32 maxDeviation, uint40 timestamp);
+    event MarketStatusUpdated(uint256 indexed assetId, bool isClosed, uint40 timestamp);
 
     event TradeCreated(
         uint256 indexed tradeId,
@@ -277,7 +279,6 @@ contract BrokexCore {
     }
 
     function acceptOwnership() external {
-        if (securityMode >= MODE_PAUSED) revert InvalidState();
         if (msg.sender != pendingOwner) revert Unauthorized();
         owner = pendingOwner;
         pendingOwner = address(0);
@@ -386,6 +387,11 @@ contract BrokexCore {
         emit ChainlinkGuardUpdated(assetId, feed, maxDeviation, uint40(block.timestamp));
     }
 
+    function setMarketClosed(uint256 assetId, bool closed) external onlyOwner {
+        marketClosed[assetId] = closed;
+        emit MarketStatusUpdated(assetId, closed, uint40(block.timestamp));
+    }
+
     function setReferralRewardRate(uint256 newRate) external onlyOwner {
         if (securityMode >= MODE_PAUSED) revert InvalidState();
         if (newRate > PRECISION) revert InvalidInput();
@@ -418,7 +424,7 @@ contract BrokexCore {
         returns (uint256 tradeId)
     {
         AssetState storage state = assetStates[request.assetId];
-        if (!state.listed || securityMode != MODE_NORMAL || state.securityMode != MODE_NORMAL) {
+        if (!state.listed || securityMode != MODE_NORMAL || state.securityMode != MODE_NORMAL || marketClosed[request.assetId]) {
             revert InvalidState();
         }
 
@@ -464,7 +470,7 @@ contract BrokexCore {
 
     function openOrder(PendingOrder calldata request) external nonReentrant returns (uint256 tradeId) {
         AssetState storage state = assetStates[request.assetId];
-        if (!state.listed || securityMode != MODE_NORMAL || state.securityMode != MODE_NORMAL) {
+        if (!state.listed || securityMode != MODE_NORMAL || state.securityMode != MODE_NORMAL || marketClosed[request.assetId]) {
             revert InvalidState();
         }
 
@@ -1193,12 +1199,14 @@ contract BrokexCore {
                 updatedAt == 0 ||
                 block.timestamp > updatedAt + 25 hours ||
                 updatedAt > block.timestamp + 5 minutes
-            ) return;
+            ) revert OracleUncertain();
 
             uint8 clDecimals = 8;
             try IChainlinkAggregator(guard.feed).decimals() returns (uint8 dec) {
                 clDecimals = dec;
-            } catch {}
+            } catch {
+                revert OracleUncertain();
+            }
 
             uint256 chainlinkPrice;
             if (clDecimals == 6) {
@@ -1209,7 +1217,7 @@ contract BrokexCore {
                 chainlinkPrice = uint256(answer) * (10 ** (6 - clDecimals));
             }
 
-            if (chainlinkPrice == 0) return;
+            if (chainlinkPrice == 0) revert OracleUncertain();
 
             uint256 diff = supraPrice > chainlinkPrice ? supraPrice - chainlinkPrice : chainlinkPrice - supraPrice;
             uint256 divergence = (diff * PRECISION) / chainlinkPrice;
@@ -1217,7 +1225,7 @@ contract BrokexCore {
             uint32 maxDev = guard.maxDeviation == 0 ? 15_000 : guard.maxDeviation;
             if (divergence > maxDev) revert OracleUncertain();
         } catch {
-            return;
+            revert OracleUncertain();
         }
     }
 

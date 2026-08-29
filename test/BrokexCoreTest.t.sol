@@ -827,10 +827,27 @@ contract BrokexCoreTest {
         uint256 tradeId2 = core.openMarket(req, emptyProof);
         require(tradeId2 > 0, "Must succeed when guard is removed");
 
-        // 4. Stale Chainlink feed (> 25h old) -> Should ignore stale Chainlink and allow trade on Supra
+        // 4. Stale Chainlink feed (> 25h old) -> Fail-closed must revert
         core.setChainlinkGuard(FEED_GOLD, address(cl), 11_250);
         cl.setUpdatedAt(block.timestamp - 26 hours);
-        uint256 tradeId3 = core.openMarket(req, emptyProof);
-        require(tradeId3 > 0, "Must succeed and ignore stale Chainlink when updatedAt > 25 hours");
+        bool revertedStale;
+        try core.openMarket(req, emptyProof) {} catch {
+            revertedStale = true;
+        }
+        require(revertedStale, "Must revert on stale Chainlink feed (Fail-closed)");
+
+        // 5. Test marketClosed toggle
+        core.setChainlinkGuard(FEED_GOLD, address(0), 0); // remove guard
+        core.setMarketClosed(FEED_GOLD, true);
+        bool revertedClosed;
+        try core.openMarket(req, emptyProof) {} catch {
+            revertedClosed = true;
+        }
+        require(revertedClosed, "Must revert when market is closed");
+
+        // Reopen market
+        core.setMarketClosed(FEED_GOLD, false);
+        uint256 tradeId4 = core.openMarket(req, emptyProof);
+        require(tradeId4 > 0, "Must succeed when market is reopened");
     }
 }
