@@ -104,6 +104,10 @@ contract MockChainlinkFeed {
         updatedAt = block.timestamp;
     }
 
+    function setUpdatedAt(uint256 t) external {
+        updatedAt = t;
+    }
+
     function latestRoundData()
         external
         view
@@ -784,6 +788,9 @@ contract BrokexCoreTest {
     }
 
     function test_ChainlinkGuard_SuccessAndRevert() public {
+        vm.warp(1_700_000_000);
+        supra.setTimestamp(FEED_GOLD, 1_700_000_000);
+
         MockChainlinkFeed cl = new MockChainlinkFeed();
         // Supra gold price is 2500e6 ($2500.00)
         // Chainlink feed with 8 decimals: $2500.00 -> 2500 * 1e8 = 250000000000
@@ -819,5 +826,11 @@ contract BrokexCoreTest {
         core.setChainlinkGuard(FEED_GOLD, address(0), 0);
         uint256 tradeId2 = core.openMarket(req, emptyProof);
         require(tradeId2 > 0, "Must succeed when guard is removed");
+
+        // 4. Stale Chainlink feed (> 25h old) -> Should ignore stale Chainlink and allow trade on Supra
+        core.setChainlinkGuard(FEED_GOLD, address(cl), 11_250);
+        cl.setUpdatedAt(block.timestamp - 26 hours);
+        uint256 tradeId3 = core.openMarket(req, emptyProof);
+        require(tradeId3 > 0, "Must succeed and ignore stale Chainlink when updatedAt > 25 hours");
     }
 }

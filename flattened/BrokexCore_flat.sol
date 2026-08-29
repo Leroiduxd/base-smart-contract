@@ -1188,7 +1188,12 @@ contract BrokexCore {
             uint256 updatedAt,
             uint80
         ) {
-            if (answer <= 0 || updatedAt == 0) return;
+            if (
+                answer <= 0 ||
+                updatedAt == 0 ||
+                block.timestamp > updatedAt + 25 hours ||
+                updatedAt > block.timestamp + 5 minutes
+            ) return;
 
             uint8 clDecimals = 8;
             try IChainlinkAggregator(guard.feed).decimals() returns (uint8 dec) {
