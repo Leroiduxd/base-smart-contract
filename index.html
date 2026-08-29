@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brokex Gold Terminal | Trading Interface</title>
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Ethers v6 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --card-bg: rgba(16, 20, 30, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-gold: #f59e0b;
+      --accent-gold-glow: rgba(245, 158, 11, 0.25);
+      --color-long: #10b981;
+      --color-long-glow: rgba(16, 185, 129, 0.2);
+      --color-short: #ef4444;
+      --color-short-glow: rgba(239, 68, 68, 0.2);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: rgba(9, 12, 18, 0.85);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+        linear-gradient(180deg, #05070a 0%, #0a0e17 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1420px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--accent-gold-glow);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-gold);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .top-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(12px);
+    }
+
+    .stat-pill .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-pill .value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Grid Layout */
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+    }
+
+    /* Inputs & Form Groups */
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .input-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .custom-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .custom-input:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 0 3px var(--accent-gold-glow);
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #000;
+      box-shadow: 0 4px 15px var(--accent-gold-glow);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-long {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--color-long-glow);
+    }
+
+    .btn-long:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-short {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--color-short-glow);
+    }
+
+    .btn-short:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: #fff;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-action-small {
+      width: auto;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    /* Tabs */
+    .tab-group {
+      display: flex;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 16px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .tab-btn.active-long {
+      background: var(--color-long);
+      color: #fff;
+      box-shadow: 0 0 10px var(--color-long-glow);
+    }
+
+    .tab-btn.active-short {
+      background: var(--color-short);
+      color: #fff;
+      box-shadow: 0 0 10px var(--color-short-glow);
+    }
+
+    /* Leverage Slider */
+    .leverage-selector {
+      margin-bottom: 18px;
+    }
+
+    .leverage-slider {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+      margin: 12px 0;
+    }
+
+    .leverage-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-gold);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-gold);
+    }
+
+    .leverage-presets {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .preset-chip {
+      flex: 1;
+      padding: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .preset-chip.active,
+    .preset-chip:hover {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-gold);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    /* Order Summary details */
+    .summary-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      margin-bottom: 20px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .summary-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .summary-row .val {
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Table Styles */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-long {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--color-long);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-short {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--color-short);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-open {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-gold);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Logs & Toasts */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 14px 20px;
+      border-radius: 14px;
+      font-size: 13px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+      animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      max-width: 420px;
+    }
+
+    .toast-success {
+      border-left: 4px solid var(--color-long);
+    }
+
+    .toast-error {
+      border-left: 4px solid var(--color-short);
+    }
+
+    .toast-info {
+      border-left: 4px solid var(--accent-gold);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .text-success {
+      color: var(--color-long);
+    }
+
+    .text-danger {
+      color: var(--color-short);
+    }
+
+    .text-gold {
+      color: var(--accent-gold);
+    }
+
+    .pulse {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-long);
+      box-shadow: 0 0 10px var(--color-long);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      }
+
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+      }
+
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Top Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-logo">
+          <i data-lucide="gem" color="#000" size="24"></i>
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h1 class="brand-title">Brokex Gold</h1>
+            <span class="brand-badge">Base Sepolia</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">XAU/USD Autonomous Multi-Asset Perpetuals</p>
+        </div>
+      </div>
+
+      <div class="top-stats">
+        <div class="stat-pill">
+          <span class="pulse"></span>
+          <div>
+            <div class="label">Prix Spot XAU/USD</div>
+            <div class="value text-gold" id="spotPriceDisplay">$0.00</div>
+          </div>
+        </div>
+
+        <div class="stat-pill">
+          <i data-lucide="shield" size="18" color="#94a3b8"></i>
+          <div>
+            <div class="label">Spread Actuel</div>
+            <div class="value" id="currentSpreadDisplay" style="font-size: 14px;">L: 0.03% | S: 0.03%</div>
+          </div>
+        </div>
+
+        <div class="stat-pill">
+          <i data-lucide="clock" size="18" color="#94a3b8"></i>
+          <div>
+            <div class="label">Borrow Horaire</div>
+            <div class="value" id="currentBorrowDisplay" style="font-size: 14px;">L: 0.002% | S: 0.002%</div>
+          </div>
+        </div>
+
+        <div class="stat-pill">
+          <i data-lucide="layers" size="18" color="#94a3b8"></i>
+          <div>
+            <div class="label">Vault Balance</div>
+            <div class="value" id="vaultBalanceDisplay">$0.00</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <div class="grid-layout">
+
+      <!-- LEFT COLUMN: Wallet & Trading Form -->
+      <div>
+
+        <!-- 1. Wallet Connection Box -->
+        <div class="glass-card" style="margin-bottom: 24px;">
+          <div class="card-title">
+            <span>Connexion Portefeuille</span>
+            <i data-lucide="wallet" size="18" color="var(--accent-gold)"></i>
+          </div>
+
+          <!-- Web3 / Injected Wallet Connect -->
+          <button class="btn btn-primary" id="btnConnectWeb3" style="margin-bottom: 12px;">
+            <i data-lucide="shield-check" size="16"></i> Connecter MetaMask / Web3
+          </button>
+
+          <!-- Alternative Private Key for testing -->
+          <details style="margin-top: 8px;">
+            <summary style="font-size: 12px; color: var(--text-muted); cursor: pointer; margin-bottom: 8px;">
+              Ou utiliser une Clé Privée (Testnet)
+            </summary>
+            <div class="wallet-box" style="margin-top: 8px;">
+              <div class="input-group">
+                <input type="password" id="privateKeyInput" class="custom-input" placeholder="0x... ou 64 hex chars"
+                  value="0xe12f9b03327a875c2d5bf9b40a75cd2effeed46ea508ee595c6bc708c386da8c">
+              </div>
+              <button class="btn btn-secondary" id="btnConnectPk" style="font-size: 12px; padding: 10px;">
+                <i data-lucide="key" size="14"></i> Connecter via Clé Privée
+              </button>
+            </div>
+          </details>
+
+          <div id="walletDetails" style="display: none; margin-top: 16px;">
+            <div class="summary-box">
+              <div class="summary-row">
+                <span>Adresse :</span>
+                <span class="val" id="walletAddressDisplay" style="font-size: 11px;">0x...</span>
+              </div>
+              <div class="summary-row">
+                <span>Solde USDC :</span>
+                <span class="val text-success" id="usdcBalanceDisplay">0.00 USDC</span>
+              </div>
+              <div class="summary-row">
+                <span>Solde ETH :</span>
+                <span class="val" id="ethBalanceDisplay">0.00 ETH</span>
+              </div>
+              <div class="summary-row">
+                <span>Allowance USDC Core :</span>
+                <span class="val" id="usdcAllowanceDisplay">0.00 USDC</span>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" id="btnApproveUsdc" style="font-size: 12px; padding: 10px;">
+              <i data-lucide="check-circle" size="16"></i> Approuver USDC Max pour BrokexCore
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Trade Execution Box -->
+        <div class="glass-card">
+          <div class="card-title">
+            <span>Passer un Ordre</span>
+            <i data-lucide="trending-up" size="18" color="#94a3b8"></i>
+          </div>
+
+          <!-- Direction Toggle -->
+          <div class="tab-group">
+            <button class="tab-btn active-long" id="tabDirectionLong" onclick="setDirection('LONG')">LONG (Achat)</button>
+            <button class="tab-btn" id="tabDirectionShort" onclick="setDirection('SHORT')">SHORT (Vente)</button>
+          </div>
+
+          <!-- Order Type Toggle -->
+          <div class="tab-group" style="margin-bottom: 16px;">
+            <button class="tab-btn active" id="tabTypeMarket" onclick="setOrderType('MARKET')">Market Order</button>
+            <button class="tab-btn" id="tabTypeLimit" onclick="setOrderType('LIMIT')">Limit Order</button>
+            <button class="tab-btn" id="tabTypeStop" onclick="setOrderType('STOP')">Stop Order</button>
+          </div>
+
+          <!-- Limit/Stop Target Price (hidden for market) -->
+          <div class="input-group" id="targetPriceGroup" style="display: none;">
+            <label class="input-label">
+              <span>Prix Déclencheur ($)</span>
+              <span style="color: var(--accent-gold); cursor: pointer;"
+                onclick="document.getElementById('targetPriceInput').value = window.currentSpotPrice || 4400">Prix
+                Actuel</span>
+            </label>
+            <input type="number" id="targetPriceInput" class="custom-input" placeholder="Ex: 4500" step="0.01">
+          </div>
+
+          <!-- Margin / Collateral -->
+          <div class="input-group">
+            <label class="input-label">
+              <span>Collatéral (USDC)</span>
+              <span id="labelMaxUsdc" style="color: var(--text-muted); cursor: pointer;">Min: 10 USDC</span>
+            </label>
+            <input type="number" id="collateralInput" class="custom-input" placeholder="10" value="10" min="10"
+              step="1">
+          </div>
+
+          <!-- Leverage Selector -->
+          <div class="leverage-selector">
+            <div class="input-label">
+              <span>Levier (5x à 20x)</span>
+              <span class="text-gold mono" id="leverageValDisplay" style="font-size: 13px; font-weight: 700;">5x</span>
+            </div>
+            <input type="range" id="leverageSlider" class="leverage-slider" min="5" max="20" value="5">
+            <div class="leverage-presets">
+              <div class="preset-chip active" onclick="setLeverage(5)">5x</div>
+              <div class="preset-chip" onclick="setLeverage(10)">10x</div>
+              <div class="preset-chip" onclick="setLeverage(15)">15x</div>
+              <div class="preset-chip" onclick="setLeverage(20)">20x</div>
+            </div>
+          </div>
+
+          <!-- Stop Loss & Take Profit (Optional) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+            <div class="input-group">
+              <label class="input-label">Stop Loss ($)</label>
+              <input type="number" id="slInput" class="custom-input" placeholder="0 (désactivé)" step="0.01">
+            </div>
+            <div class="input-group">
+              <label class="input-label">Take Profit ($)</label>
+              <input type="number" id="tpInput" class="custom-input" placeholder="0 (désactivé)" step="0.01">
+            </div>
+          </div>
+
+          <!-- Summary calculation -->
+          <div class="summary-box">
+            <div class="summary-row">
+              <span>Taille Position (OI) :</span>
+              <span class="val" id="summaryOiDisplay">50.00 USDC</span>
+            </div>
+            <div class="summary-row">
+              <span>Frais Commission (0.1%) :</span>
+              <span class="val" id="summaryFeeDisplay">0.05 USDC</span>
+            </div>
+            <div class="summary-row">
+              <span>Prix Liquidation Est. (95%) :</span>
+              <span class="val text-danger" id="summaryLiqDisplay">~$0.00</span>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button class="btn btn-long" id="btnSubmitTrade">
+            <i data-lucide="zap" size="18"></i>
+            <span id="submitTradeText">Ouvrir LONG @ Market</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Open Positions & Pending Orders -->
+      <div>
+
+        <!-- Positions & Orders Table -->
+        <div class="glass-card">
+          <div class="card-title">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span>Mes Positions Actives & Ordres</span>
+              <span class="badge badge-open" id="activeTradesCountBadge">0 Actif</span>
+            </div>
+            <button class="btn btn-secondary btn-action-small" id="btnRefreshTrades">
+              <i data-lucide="rotate-cw" size="14"></i> Rafraîchir
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Type</th>
+                  <th>Direction</th>
+                  <th>Collatéral / Levier</th>
+                  <th>Prix (Entrée / Cible)</th>
+                  <th>SL / TP</th>
+                  <th>Statut</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="tradesTableBody">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px;">
+                    Connectez votre portefeuille pour charger vos positions...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Protocol & Market Details Card -->
+        <div class="glass-card" style="margin-top: 24px;">
+          <div class="card-title">
+            <span>Métriques Marché Or (Lens & Core)</span>
+            <i data-lucide="activity" size="18" color="var(--accent-gold)"></i>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="summary-box">
+              <div class="summary-row">
+                <span>OI Long Actuel :</span>
+                <span class="val text-success" id="lensOiLongDisplay">0.00 USDC</span>
+              </div>
+              <div class="summary-row">
+                <span>Max OI Long Disponible :</span>
+                <span class="val" id="lensMaxOiLongDisplay">5,000 USDC</span>
+              </div>
+            </div>
+
+            <div class="summary-box">
+              <div class="summary-row">
+                <span>OI Short Actuel :</span>
+                <span class="val text-danger" id="lensOiShortDisplay">0.00 USDC</span>
+              </div>
+              <div class="summary-row">
+                <span>Max OI Short Disponible :</span>
+                <span class="val" id="lensMaxOiShortDisplay">5,000 USDC</span>
+              </div>
+            </div>
+
+            <div class="summary-box">
+              <div class="summary-row">
+                <span>Max Skew Autorisé :</span>
+                <span class="val" id="lensMaxSkewDisplay">$5,000.00</span>
+              </div>
+              <div class="summary-row">
+                <span>Locked Capital (12%) :</span>
+                <span class="val" id="lensLockedCapDisplay">$0.00</span>
+              </div>
+            </div>
+
+            <div class="summary-box">
+              <div class="summary-row">
+                <span>BrokexCore :</span>
+                <span class="val" style="font-size: 10px;">0xF9Dcf...8769</span>
+              </div>
+              <div class="summary-row">
+                <span>BrokexVault :</span>
+                <span class="val" style="font-size: 10px;">0x3dfB1...d260</span>
+              </div>
+              <div class="summary-row">
+                <span>BrokexLens :</span>
+                <span class="val" style="font-size: 10px;">0x26C4C...C0eB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Javascript Logic -->
+  <script>
+    // Configuration Réseau & Contrats Déployés
+    const RPC_URLS = [
+      "https://api.developer.coinbase.com/rpc/v1/base-sepolia/h6Jh2uThY6yIgosEwH3eK7rm3yQWNV0h",
+      "https://base-sepolia.drpc.org",
+      "https://sepolia.base.org"
+    ];
+
+    let currentRpcIndex = 0;
+    const GOLD_ASSET_ID = 5500;
+    const SUPRA_CONTRACT_ADDRESS = "0x391Ab9ad5C4BFee04eA508b0a0Cf499198D015e3";
+
+    // Adresses déployées sur Base Sepolia
+    const CORE_ADDRESS = "0x171386dEaBFdd281c29345F12996bA35f1Aed0d2";
+    const VAULT_ADDRESS = "0xa35af336059Db7659b5f1565d9F9309323961067";
+    const LENS_ADDRESS = "0x9CE55cAbB24f01849B5ac00cB86C2C8CAE9EDF20";
+    const USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+
+    // ABIs
+    const USDC_ABI = [
+      "function balanceOf(address account) view returns (uint256)",
+      "function allowance(address owner, address spender) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)"
+    ];
+
+    const CORE_ABI = [
+      "function nextTradeId() view returns (uint256)",
+      "function trades(uint256 tradeId) view returns (address trader, uint40 openTimestamp, uint8 state, uint8 direction, uint8 orderType, uint8 leverage, uint64 margin, uint64 price, uint64 stopLoss, uint64 takeProfit, uint128 borrowIndexAtOpen, uint256 assetId)",
+      "function openMarket((uint256 assetId, uint8 direction, uint256 collateral, uint256 leverage, uint256 stopLoss, uint256 takeProfit, address referrer) request, bytes[] priceUpdateData) returns (uint256)",
+      "function openOrder((uint256 assetId, uint8 direction, uint8 orderType, uint256 targetPrice, uint256 collateral, uint256 leverage, uint256 stopLoss, uint256 takeProfit, address referrer) request) returns (uint256)",
+      "function cancel(uint256 tradeId)",
+      "function closeMarket(uint256 tradeId, bytes[] priceUpdateData)",
+      "function setStops(uint256 tradeId, uint256 newSL, uint256 newTP)"
+    ];
+
+    const LENS_ABI = [
+      "function getProtocolInfo() view returns (tuple(address owner, address pendingOwner, address usdc, address supra, address vault, uint256 lockedCapital, uint256 vaultBalance, uint256 latestTradeId, uint8 securityMode, uint256[] activeAssets))",
+      "function getAssetInfo(uint256 assetId) view returns (tuple(uint256 assetId, bool listed, uint8 securityMode, uint256 minLeverage, uint256 maxLeverage, uint256 minTradeSize, uint256 commissionRate, uint256 maxTraderOI, uint256 maxOpenInterest, uint256 maxSkew, uint256 dynamicMaxOILong, uint256 dynamicMaxOIShort, uint256 minSpread, uint256 maxSpread, uint256 spreadVirtualOI, uint256 maxSpreadPenalty, uint256 maxSpreadDiscount, uint256 baseBorrowRateHourly, uint256 maxBorrowRateHourly, uint256 currentLongBorrowRate, uint256 currentShortBorrowRate, uint256 currentLongSpread, uint256 currentShortSpread, uint256 lockedCapitalRate, uint256 liquidationThreshold, uint256 maxProfitRate, uint256 recoveryTimeDays, uint256 openInterestLong, uint256 openInterestShort, uint256 assetLockedCapital, uint256 longBorrowIndex, uint256 shortBorrowIndex, uint256 currentLongBorrowIndex, uint256 currentShortBorrowIndex, uint256 lastBorrowUpdate))",
+      "function getTradesByRange(uint256 fromId, uint256 toId) view returns (tuple(address trader, uint40 openTimestamp, uint8 state, uint8 direction, uint8 orderType, uint8 leverage, uint64 margin, uint64 price, uint64 stopLoss, uint64 takeProfit, uint128 borrowIndexAtOpen, uint256 assetId)[])"
+    ];
+
+    // State Variables
+    let provider = new ethers.JsonRpcProvider(RPC_URLS[0]);
+    let signer = null;
+    let userAddress = null;
+    let usdcContract = null;
+    let coreContract = null;
+    let lensContract = new ethers.Contract(LENS_ADDRESS, LENS_ABI, provider);
+
+    let tradeDirection = 'LONG'; // 'LONG' or 'SHORT'
+    let orderType = 'MARKET';     // 'MARKET', 'LIMIT', 'STOP'
+    let currentSpotPrice = 0;
+
+    // Helper: RPC provider auto-fallback
+    async function getWorkingProvider() {
+      for (let i = 0; i < RPC_URLS.length; i++) {
+        const url = RPC_URLS[(currentRpcIndex + i) % RPC_URLS.length];
+        try {
+          const testProvider = new ethers.JsonRpcProvider(url, 84532, { staticNetwork: ethers.Network.from(84532) });
+          const block = await Promise.race([
+            testProvider.getBlockNumber(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))
+          ]);
+          if (block && block > 0) {
+            currentRpcIndex = (currentRpcIndex + i) % RPC_URLS.length;
+            provider = testProvider;
+            lensContract = new ethers.Contract(LENS_ADDRESS, LENS_ABI, provider);
+            console.log(`[RPC] Using RPC: ${url}`);
+            return provider;
+          }
+        } catch (e) {
+          console.warn(`[RPC] ${url} failed:`, e.message);
+        }
+      }
+      return provider;
+    }
+    getWorkingProvider();
+
+    // ==========================================
+    // NOTIFICATIONS / TOAST
+    // ==========================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+
+      let icon = 'info';
+      if (type === 'success') icon = 'check-circle';
+      if (type === 'error') icon = 'alert-triangle';
+
+      toast.innerHTML = `<i data-lucide="${icon}" size="18"></i> <div>${message}</div>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+
+    // ==========================================
+    // SUPRA ORACLE PROOF & LIVE PRICE STREAM
+    // ==========================================
+    async function fetchSupraData(assetId = GOLD_ASSET_ID) {
+      const urls = [
+        `/api/proof?assetId=${assetId}`,
+        `http://localhost:3333/api/proof?assetId=${assetId}`,
+        `http://127.0.0.1:3333/api/proof?assetId=${assetId}`
+      ];
+      for (const u of urls) {
+        try {
+          const res = await fetch(u);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success) return json;
+          }
+        } catch (e) {}
+      }
+      throw new Error("Proxy Supra introuvable. Veuillez lancer le serveur local (node server.js)");
+    }
+
+    async function fetchLiveGoldPrice() {
+      try {
+        const data = await fetchSupraData(GOLD_ASSET_ID);
+        const price = data.price;
+        currentSpotPrice = price;
+        window.currentSpotPrice = price;
+        document.getElementById('spotPriceDisplay').innerText = `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        updateSummaryCalculations();
+      } catch (err) {
+        console.error("Supra price fetch error:", err.message);
+      }
+    }
+    setInterval(fetchLiveGoldPrice, 1500);
+    fetchLiveGoldPrice();
+
+    // ==========================================
+    // SETUP USER SESSION
+    // ==========================================
+    async function setupUserSession(connectedSigner, address) {
+      signer = connectedSigner;
+      userAddress = address;
+
+      usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, signer);
+      coreContract = new ethers.Contract(CORE_ADDRESS, CORE_ABI, signer);
+
+      document.getElementById('walletAddressDisplay').innerText = `${userAddress.slice(0, 8)}...${userAddress.slice(-6)}`;
+      document.getElementById('walletDetails').style.display = 'block';
+      document.getElementById('btnConnectWeb3').innerHTML = `<i data-lucide="check" size="16"></i> Connecté (${userAddress.slice(0, 6)}...)`;
+      document.getElementById('btnConnectWeb3').classList.remove('btn-primary');
+      document.getElementById('btnConnectWeb3').classList.add('btn-secondary');
+      lucide.createIcons();
+
+      showToast(`Wallet connecté : ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`, "success");
+
+      await refreshBalances();
+      await refreshTrades();
+      await refreshProtocolInfo();
+    }
+
+    // Connect via MetaMask / Web3 Injected
+    document.getElementById('btnConnectWeb3').addEventListener('click', async () => {
+      if (!window.ethereum) {
+        showToast("Aucun wallet Web3 (MetaMask/Coinbase) détecté dans ce navigateur.", "error");
+        return;
+      }
+      try {
+        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        const network = await browserProvider.getNetwork();
+        if (network.chainId !== 84532n) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x14a34' }]
+            });
+          } catch (switchErr) {
+            if (switchErr.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x14a34',
+                  chainName: 'Base Sepolia',
+                  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['https://sepolia.base.org'],
+                  blockExplorerUrls: ['https://sepolia.basescan.org']
+                }]
+              });
+            }
+          }
+        }
+        const web3Signer = await browserProvider.getSigner();
+        const address = await web3Signer.getAddress();
+        await setupUserSession(web3Signer, address);
+      } catch (err) {
+        console.error("Web3 connect error:", err);
+        showToast(`Erreur connexion Web3 : ${err.message}`, "error");
+      }
+    });
+
+    // Connect via Private Key
+    document.getElementById('btnConnectPk').addEventListener('click', async () => {
+      const pkInput = document.getElementById('privateKeyInput').value.trim();
+      if (!pkInput) return showToast("Veuillez renseigner une clé privée valide.", "error");
+      try {
+        let pk = pkInput;
+        if (!pk.startsWith('0x')) pk = '0x' + pk;
+        const pkSigner = new ethers.Wallet(pk, provider);
+        await setupUserSession(pkSigner, pkSigner.address);
+      } catch (err) {
+        console.error(err);
+        showToast(`Erreur clé privée : ${err.message}`, "error");
+      }
+    });
+
+    // ==========================================
+    // REFRESH BALANCES
+    // ==========================================
+    async function refreshBalances() {
+      if (!userAddress || !usdcContract) return;
+      try {
+        const [rawUsdc, rawEth, rawAllowance] = await Promise.all([
+          usdcContract.balanceOf(userAddress),
+          provider.getBalance(userAddress),
+          usdcContract.allowance(userAddress, CORE_ADDRESS)
+        ]);
+
+        const usdc = Number(rawUsdc) / 1e6;
+        const eth = Number(ethers.formatEther(rawEth));
+        const allowance = Number(rawAllowance) / 1e6;
+
+        document.getElementById('usdcBalanceDisplay').innerText = `${usdc.toFixed(2)} USDC`;
+        document.getElementById('ethBalanceDisplay').innerText = `${eth.toFixed(4)} ETH`;
+        document.getElementById('usdcAllowanceDisplay').innerText = allowance > 1e9 ? "Illimitée (Max)" : `${allowance.toFixed(2)} USDC`;
+      } catch (err) {
+        console.error("Refresh balances error:", err);
+      }
+    }
+
+    // ==========================================
+    // APPROVE USDC ALLOWANCE
+    // ==========================================
+    document.getElementById('btnApproveUsdc').addEventListener('click', async () => {
+      if (!signer) return showToast("Connectez d'abord votre wallet", "error");
+      try {
+        showToast("Envoi de la transaction d'approbation USDC...", "info");
+        const tx = await usdcContract.approve(CORE_ADDRESS, ethers.MaxUint256);
+        showToast(`Tx envoyée: ${tx.hash.slice(0, 10)}... En attente de confirmation`, "info");
+        await tx.wait(1);
+        showToast("✅ Approbation USDC confirmée avec succès !", "success");
+        await refreshBalances();
+      } catch (err) {
+        console.error(err);
+        showToast(`Erreur Approve: ${err.message}`, "error");
+      }
+    });
+
+    // ==========================================
+    // PROTOCOL INFO & LENS METRICS
+    // ==========================================
+    async function refreshProtocolInfo() {
+      try {
+        const [protoInfo, goldInfo] = await Promise.all([
+          lensContract.getProtocolInfo(),
+          lensContract.getAssetInfo(GOLD_ASSET_ID)
+        ]);
+
+        const vaultBal = Number(protoInfo.vaultBalance) / 1e6;
+        const oiLong = Number(goldInfo.openInterestLong) / 1e6;
+        const oiShort = Number(goldInfo.openInterestShort) / 1e6;
+        const maxSkew = Number(goldInfo.maxSkew) / 1e6;
+        const lockedCap = Number(goldInfo.assetLockedCapital) / 1e6;
+
+        const maxOiLongAvail = Number(goldInfo.dynamicMaxOILong) / 1e6;
+        const maxOiShortAvail = Number(goldInfo.dynamicMaxOIShort) / 1e6;
+
+        const spreadL = (Number(goldInfo.currentLongSpread) / 10000).toFixed(2);
+        const spreadS = (Number(goldInfo.currentShortSpread) / 10000).toFixed(2);
+        const borrowL = ((Number(goldInfo.currentLongBorrowRate) / 10000)).toFixed(3);
+        const borrowS = ((Number(goldInfo.currentShortBorrowRate) / 10000)).toFixed(3);
+
+        document.getElementById('vaultBalanceDisplay').innerText = `$${vaultBal.toFixed(2)}`;
+        document.getElementById('lensOiLongDisplay').innerText = `${oiLong.toFixed(2)} USDC`;
+        document.getElementById('lensOiShortDisplay').innerText = `${oiShort.toFixed(2)} USDC`;
+        document.getElementById('lensMaxOiLongDisplay').innerText = `${maxOiLongAvail.toLocaleString('en-US')} USDC`;
+        document.getElementById('lensMaxOiShortDisplay').innerText = `${maxOiShortAvail.toLocaleString('en-US')} USDC`;
+        document.getElementById('lensMaxSkewDisplay').innerText = `$${maxSkew.toLocaleString('en-US')}`;
+        document.getElementById('lensLockedCapDisplay').innerText = `$${lockedCap.toFixed(2)}`;
+
+        document.getElementById('currentSpreadDisplay').innerText = `L: ${spreadL}% | S: ${spreadS}%`;
+        document.getElementById('currentBorrowDisplay').innerText = `L: ${borrowL}%/h | S: ${borrowS}%/h`;
+      } catch (err) {
+        console.error("Lens protocol refresh error:", err);
+      }
+    }
+    setInterval(refreshProtocolInfo, 4000);
+    refreshProtocolInfo();
+
+    // ==========================================
+    // FORM INTERACTION (TABS, LEVERAGE, CALCS)
+    // ==========================================
+    function setDirection(dir) {
+      tradeDirection = dir;
+      const btnLong = document.getElementById('tabDirectionLong');
+      const btnShort = document.getElementById('tabDirectionShort');
+      const submitBtn = document.getElementById('btnSubmitTrade');
+
+      if (dir === 'LONG') {
+        btnLong.className = 'tab-btn active-long';
+        btnShort.className = 'tab-btn';
+        submitBtn.className = 'btn btn-long';
+      } else {
+        btnLong.className = 'tab-btn';
+        btnShort.className = 'tab-btn active-short';
+        submitBtn.className = 'btn btn-short';
+      }
+      updateSubmitButtonText();
+      updateSummaryCalculations();
+    }
+
+    function setOrderType(type) {
+      orderType = type;
+      ['Market', 'Limit', 'Stop'].forEach(t => {
+        const btn = document.getElementById(`tabType${t}`);
+        if (t.toUpperCase() === type) {
+          btn.className = 'tab-btn active';
+        } else {
+          btn.className = 'tab-btn';
+        }
+      });
+
+      const targetGroup = document.getElementById('targetPriceGroup');
+      if (type === 'MARKET') {
+        targetGroup.style.display = 'none';
+      } else {
+        targetGroup.style.display = 'block';
+        if (!document.getElementById('targetPriceInput').value && currentSpotPrice) {
+          document.getElementById('targetPriceInput').value = currentSpotPrice.toFixed(2);
+        }
+      }
+      updateSubmitButtonText();
+      updateSummaryCalculations();
+    }
+
+    function setLeverage(lev) {
+      document.getElementById('leverageSlider').value = lev;
+      document.getElementById('leverageValDisplay').innerText = `${lev}x`;
+
+      document.querySelectorAll('.preset-chip').forEach(chip => {
+        if (chip.innerText === `${lev}x`) chip.classList.add('active');
+        else chip.classList.remove('active');
+      });
+      updateSummaryCalculations();
+    }
+
+    document.getElementById('leverageSlider').addEventListener('input', (e) => {
+      const lev = e.target.value;
+      document.getElementById('leverageValDisplay').innerText = `${lev}x`;
+      document.querySelectorAll('.preset-chip').forEach(chip => {
+        if (chip.innerText === `${lev}x`) chip.classList.add('active');
+        else chip.classList.remove('active');
+      });
+      updateSummaryCalculations();
+    });
+
+    document.getElementById('collateralInput').addEventListener('input', updateSummaryCalculations);
+    document.getElementById('targetPriceInput').addEventListener('input', updateSummaryCalculations);
+
+    function updateSubmitButtonText() {
+      const btn = document.getElementById('btnSubmitTrade');
+      if (!btn) return;
+      btn.innerHTML = `<i data-lucide="zap" size="18"></i> <span id="submitTradeText">Ouvrir ${tradeDirection} @ ${orderType}</span>`;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function updateSummaryCalculations() {
+      const collateral = parseFloat(document.getElementById('collateralInput').value) || 0;
+      const leverage = parseFloat(document.getElementById('leverageSlider').value) || 5;
+      const oi = collateral * leverage;
+      const fee = oi * 0.001; // 0.1% commission
+
+      document.getElementById('summaryOiDisplay').innerText = `${oi.toFixed(2)} USDC`;
+      document.getElementById('summaryFeeDisplay').innerText = `${fee.toFixed(2)} USDC`;
+
+      const basePrice = orderType === 'MARKET' ? currentSpotPrice : (parseFloat(document.getElementById('targetPriceInput').value) || currentSpotPrice);
+      if (basePrice > 0) {
+        const move = (basePrice * 0.95) / leverage; // 95% liquidation threshold
+        const liq = tradeDirection === 'LONG' ? (basePrice - move) : (basePrice + move);
+        document.getElementById('summaryLiqDisplay').innerText = `~$${Math.max(0, liq).toFixed(2)}`;
+      }
+    }
+
+    // ==========================================
+    // EXECUTE / OPEN TRADE (MARKET & ORDERS)
+    // ==========================================
+    document.getElementById('btnSubmitTrade').addEventListener('click', async () => {
+      if (!signer) return showToast("Veuillez connecter votre portefeuille d'abord.", "error");
+
+      const collateral = parseFloat(document.getElementById('collateralInput').value);
+      if (!collateral || collateral < 10) {
+        return showToast("Le collatéral minimum pour l'Or est de 10 USDC.", "error");
+      }
+
+      const leverage = parseInt(document.getElementById('leverageSlider').value, 10);
+      const sl = parseFloat(document.getElementById('slInput').value) || 0;
+      const tp = parseFloat(document.getElementById('tpInput').value) || 0;
+      const dir = tradeDirection === 'LONG' ? 1 : 0;
+
+      const collatUnits = BigInt(Math.floor(collateral * 1e6));
+      const slUnits = BigInt(Math.floor(sl * 1e6));
+      const tpUnits = BigInt(Math.floor(tp * 1e6));
+
+      const btn = document.getElementById('btnSubmitTrade');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader" class="spinner" size="18"></i> Exécution en cours...`;
+      lucide.createIcons();
+
+      try {
+        // 1. Check & Auto-Approve USDC Allowance
+        const allowance = await usdcContract.allowance(userAddress, CORE_ADDRESS);
+        if (allowance < collatUnits) {
+          showToast("Approbation USDC requise pour BrokexCore...", "info");
+          const appTx = await usdcContract.approve(CORE_ADDRESS, ethers.MaxUint256);
+          showToast(`Approbation envoyée: ${appTx.hash.slice(0, 10)}... En attente`, "info");
+          await appTx.wait(1);
+          showToast("✅ USDC approuvé avec succès !", "success");
+          await refreshBalances();
+        }
+
+        if (orderType === 'MARKET') {
+          showToast("Récupération de la preuve de prix Supra...", "info");
+
+          // 2. Fetch Supra Proof
+          const supraData = await fetchSupraData(GOLD_ASSET_ID);
+          const supraProof = supraData.proofBytes;
+
+          // 3. Send openMarket Transaction
+          showToast("Envoi de la transaction openMarket...", "info");
+          const marketOrder = {
+            assetId: BigInt(GOLD_ASSET_ID),
+            direction: dir,
+            collateral: collatUnits,
+            leverage: BigInt(leverage),
+            stopLoss: slUnits,
+            takeProfit: tpUnits,
+            referrer: ethers.ZeroAddress
+          };
+
+          const tx = await coreContract.openMarket(marketOrder, [supraProof]);
+          showToast(`Tx envoyée: ${tx.hash.slice(0, 10)}... En attente de confirmation`, "info");
+          
+          const receipt = await tx.wait(1);
+          showToast("🎉 Position Market ouverte avec succès sur l'Or !", "success");
+
+        } else {
+          // LIMIT OR STOP ORDER
+          const targetPrice = parseFloat(document.getElementById('targetPriceInput').value);
+          if (!targetPrice || targetPrice <= 0) {
+            throw new Error("Veuillez renseigner un prix cible valide pour l'ordre.");
+          }
+
+          const targetUnits = BigInt(Math.floor(targetPrice * 1e6));
+          const typeCode = orderType === 'LIMIT' ? 1 : 2;
+
+          showToast(`Envoi de l'ordre ${orderType}...`, "info");
+          const pendingOrder = {
+            assetId: BigInt(GOLD_ASSET_ID),
+            direction: dir,
+            orderType: typeCode,
+            targetPrice: targetUnits,
+            collateral: collatUnits,
+            leverage: BigInt(leverage),
+            stopLoss: slUnits,
+            takeProfit: tpUnits,
+            referrer: ethers.ZeroAddress
+          };
+
+          const tx = await coreContract.openOrder(pendingOrder);
+          showToast(`Tx envoyée: ${tx.hash.slice(0, 10)}... En attente de confirmation`, "info");
+          await tx.wait(1);
+          showToast(`🎉 Ordre ${orderType} placé avec succès !`, "success");
+        }
+
+        await refreshBalances();
+        await refreshTrades();
+        await refreshProtocolInfo();
+      } catch (err) {
+        console.error("❌ ERREUR TRADE:", err);
+        showToast(`Erreur : ${err.reason || err.message}`, "error");
+      } finally {
+        btn.disabled = false;
+        updateSubmitButtonText();
+        lucide.createIcons();
+      }
+    });
+
+    // ==========================================
+    // REFRESH & DISPLAY TRADES LIST
+    // ==========================================
+    async function refreshTrades() {
+      if (!userAddress || !coreContract) return;
+      const tbody = document.getElementById('tradesTableBody');
+
+      try {
+        const nextId = Number(await coreContract.nextTradeId());
+        if (nextId <= 1) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Aucun trade sur ce contrat pour le moment.</td></tr>`;
+          document.getElementById('activeTradesCountBadge').innerText = `0 Actif`;
+          return;
+        }
+
+        const allTrades = await lensContract.getTradesByRange(1, nextId - 1);
+        let activeCount = 0;
+        let html = '';
+
+        for (let i = allTrades.length - 1; i >= 0; i--) {
+          const t = allTrades[i];
+          const tradeId = i + 1;
+
+          // Filtrer par wallet utilisateur
+          if (t.trader.toLowerCase() !== userAddress.toLowerCase()) continue;
+
+          const state = Number(t.state);
+          const dir = Number(t.direction) === 1 ? 'LONG' : 'SHORT';
+          const oType = Number(t.orderType) === 0 ? 'MARKET' : (Number(t.orderType) === 1 ? 'LIMIT' : 'STOP');
+          const margin = Number(t.margin) / 1e6;
+          const lev = Number(t.leverage);
+          const price = Number(t.price) / 1e6;
+          const sl = Number(t.stopLoss) / 1e6;
+          const tp = Number(t.takeProfit) / 1e6;
+
+          let stateBadge = '';
+          let actionBtn = '';
+
+          if (state === 0) {
+            stateBadge = `<span class="badge badge-pending">PENDING (ORDER)</span>`;
+            actionBtn = `<button class="btn btn-secondary btn-action-small" onclick="cancelOrder(${tradeId})" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);"><i data-lucide="x" size="12"></i> Annuler</button>`;
+            activeCount++;
+          } else if (state === 1) {
+            stateBadge = `<span class="badge badge-open">OPEN</span>`;
+            actionBtn = `<button class="btn btn-secondary btn-action-small" onclick="closeMarketTrade(${tradeId})" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3);"><i data-lucide="power" size="12"></i> Fermer Market</button>`;
+            activeCount++;
+          } else if (state === 2) {
+            stateBadge = `<span class="badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8;">CLOSED</span>`;
+            actionBtn = `<span style="color: var(--text-muted); font-size: 11px;">Fermé</span>`;
+          } else if (state === 3) {
+            stateBadge = `<span class="badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8;">CANCELLED</span>`;
+            actionBtn = `<span style="color: var(--text-muted); font-size: 11px;">Annulé</span>`;
+          } else if (state === 4) {
+            stateBadge = `<span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">LIQUIDATED</span>`;
+            actionBtn = `<span style="color: #ef4444; font-size: 11px;">Liquidé</span>`;
+          } else if (state === 5) {
+            stateBadge = `<span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">RECOVERED</span>`;
+            actionBtn = `<span style="color: #a855f7; font-size: 11px;">Remboursé</span>`;
+          }
+
+          html += `
+            <tr>
+              <td class="mono" style="font-weight: 700;">#${tradeId}</td>
+              <td style="font-size: 12px; font-weight: 600;">${oType}</td>
+              <td><span class="badge ${dir === 'LONG' ? 'badge-long' : 'badge-short'}">${dir}</span></td>
+              <td class="mono">${margin.toFixed(2)} USDC <span style="color: var(--accent-gold);">(${lev}x)</span></td>
+              <td class="mono">$${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+              <td class="mono" style="font-size: 11px; color: var(--text-muted);">
+                SL: ${sl > 0 ? '$' + sl.toFixed(2) : '-'} | TP: ${tp > 0 ? '$' + tp.toFixed(2) : '-'}
+              </td>
+              <td>${stateBadge}</td>
+              <td style="text-align: right;">${actionBtn}</td>
+            </tr>
+          `;
+        }
+
+        if (!html) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Aucun trade trouvé pour votre adresse.</td></tr>`;
+        } else {
+          tbody.innerHTML = html;
+        }
+
+        document.getElementById('activeTradesCountBadge').innerText = `${activeCount} Actif${activeCount > 1 ? 's' : ''}`;
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Refresh trades error:", err);
+      }
+    }
+    document.getElementById('btnRefreshTrades').addEventListener('click', refreshTrades);
+
+    // ==========================================
+    // CANCEL ORDER
+    // ==========================================
+    window.cancelOrder = async function (tradeId) {
+      if (!signer) return;
+      try {
+        showToast(`Annulation de l'ordre #${tradeId}...`, "info");
+        const tx = await coreContract.cancel(tradeId);
+        showToast(`Tx envoyée: ${tx.hash.slice(0, 10)}... En attente`, "info");
+        await tx.wait(1);
+        showToast(`🎉 Ordre #${tradeId} annulé avec succès et remboursé !`, "success");
+        await refreshBalances();
+        await refreshTrades();
+      } catch (err) {
+        console.error(err);
+        showToast(`Erreur Annulation : ${err.reason || err.message}`, "error");
+      }
+    };
+
+    // ==========================================
+    // CLOSE MARKET POSITION
+    // ==========================================
+    window.closeMarketTrade = async function (tradeId) {
+      if (!signer) return;
+      try {
+        showToast(`Fermeture Market de la position #${tradeId}...`, "info");
+
+        // 1. Supra Proof
+        const supraData = await fetchSupraData(GOLD_ASSET_ID);
+        const supraProof = supraData.proofBytes;
+
+        // 2. Send closeMarket tx (Supra does not require ETH fee)
+        const tx = await coreContract.closeMarket(tradeId, [supraProof]);
+        showToast(`Tx envoyée: ${tx.hash.slice(0, 10)}... En attente de confirmation`, "info");
+        await tx.wait(1);
+        showToast(`🎉 Position #${tradeId} fermée au prix Market !`, "success");
+
+        await refreshBalances();
+        await refreshTrades();
+        await refreshProtocolInfo();
+      } catch (err) {
+        console.error(err);
+        showToast(`Erreur Fermeture : ${err.reason || err.message}`, "error");
+      }
+    };
+
+    // Initialize Lucide Icons
+    lucide.createIcons();
+  </script>
+</body>
+
+</html>
