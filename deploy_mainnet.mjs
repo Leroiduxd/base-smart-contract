@@ -149,8 +149,15 @@ async function main() {
   await listTx.wait(1);
   console.log(`✅ Marché Gold (5500) listé avec succès !`);
 
-  // 5. Déploiement de BrokexLens
-  console.log("\n5️⃣ Déploiement de BrokexLens...");
+  // 5. Configuration du Garde-Fou Chainlink pour l'Or (0.75% max deviation = 7500)
+  console.log("\n5️⃣ Configuration du Garde-Fou Chainlink (0.75% déviation max)...");
+  const CHAINLINK_GOLD_MAINNET = "0x5213eBB69743b85644dbB6E25cdF994aFBb8cF31";
+  const guardTx = await core.setChainlinkGuard(GOLD_ASSET_ID, CHAINLINK_GOLD_MAINNET, 7_500);
+  await guardTx.wait(1);
+  console.log(`✅ Garde-Fou Chainlink configuré pour Gold (5500) !`);
+
+  // 6. Déploiement de BrokexLens
+  console.log("\n6️⃣ Déploiement de BrokexLens...");
   const LensFactory = new ethers.ContractFactory(lensArtifact.abi, lensArtifact.bytecode.object, deployer);
   const lens = await LensFactory.deploy(coreAddress);
   await lens.waitForDeployment();

@@ -15,6 +15,8 @@ contract DeployMainnet {
 
     address public constant USDC_MAINNET = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     address public constant SUPRA_MAINNET = 0x2FA6DbFe4291136Cf272E1A3294362b6651e8517; 
+    address public constant CHAINLINK_GOLD_MAINNET = 0x5213eBB69743b85644dbB6E25cdF994aFBb8cF31;
+    uint32 public constant GOLD_CHAINLINK_MAX_DEVIATION = 7_500; // 0.75% max deviation
     uint256 public constant GOLD_ASSET_ID = 5500;
 
     function run() external returns (BrokexVault vault, BrokexCore core, BrokexLens lens) {
@@ -54,7 +56,10 @@ contract DeployMainnet {
 
         core.listAsset(GOLD_ASSET_ID, goldConfig);
 
-        // 5. Deploy Lens
+        // 5. Configure Chainlink Guard for Gold (0.75% max deviation)
+        core.setChainlinkGuard(GOLD_ASSET_ID, CHAINLINK_GOLD_MAINNET, GOLD_CHAINLINK_MAX_DEVIATION);
+
+        // 6. Deploy Lens
         lens = new BrokexLens(address(core));
 
         vm.stopBroadcast();
