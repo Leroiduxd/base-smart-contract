@@ -1614,6 +1614,15 @@
       if (saved) {
         try {
           const data = JSON.parse(saved);
+          // If cached address is old Sepolia, auto-upgrade to Mainnet
+          if (data.core === "0x171386dEaBFdd281c29345F12996bA35f1Aed0d2" || !data.core) {
+            document.getElementById("cfg-core").value = MAINNET_ADDRS.core;
+            document.getElementById("cfg-vault").value = MAINNET_ADDRS.vault;
+            document.getElementById("cfg-lens").value = MAINNET_ADDRS.lens;
+            document.getElementById("cfg-usdc").value = MAINNET_ADDRS.usdc;
+            saveAddresses();
+            return;
+          }
           document.getElementById("cfg-core").value = data.core || MAINNET_ADDRS.core;
           document.getElementById("cfg-vault").value = data.vault || MAINNET_ADDRS.vault;
           document.getElementById("cfg-lens").value = data.lens || MAINNET_ADDRS.lens;
@@ -1635,7 +1644,6 @@
         usdc: document.getElementById("cfg-usdc").value.trim()
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      showToast("Adresses de contrats sauvegardées !", "success");
       initContracts();
     }
 
@@ -1646,6 +1654,7 @@
       document.getElementById("cfg-lens").value = MAINNET_ADDRS.lens;
       document.getElementById("cfg-usdc").value = MAINNET_ADDRS.usdc;
       saveAddresses();
+      showToast("Adresses Base Mainnet chargées !", "success");
     });
 
     // Preset Addresses for Sepolia
@@ -1658,7 +1667,10 @@
       showToast("Adresses Base Sepolia chargées !", "info");
     });
 
-    document.getElementById("btn-save-cfg").addEventListener("click", saveAddresses);
+    document.getElementById("btn-save-cfg").addEventListener("click", () => {
+      saveAddresses();
+      showToast("Adresses de contrats sauvegardées !", "success");
+    });
 
     // Initialize Contracts instances
     function initContracts() {
@@ -1690,7 +1702,32 @@
         signer = await provider.getSigner();
         userAddress = accounts[0];
 
-        const network = await provider.getNetwork();
+        let network = await provider.getNetwork();
+
+        // If not Base Mainnet (8453), request switch to Base Mainnet
+        if (network.chainId !== 8453n) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x2105' }], // 8453 in hex
+            });
+            network = await provider.getNetwork();
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x2105',
+                  chainName: 'Base Mainnet',
+                  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['https://mainnet.base.org'],
+                  blockExplorerUrls: ['https://basescan.org']
+                }]
+              });
+              network = await provider.getNetwork();
+            }
+          }
+        }
 
         document.getElementById("network-name").textContent = network.chainId === 8453n ? "Base Mainnet" : network.chainId === 84532n ? "Base Sepolia" : `Chain ID: ${network.chainId}`;
         document.getElementById("network-indicator").className = "network-dot active";
@@ -1698,7 +1735,7 @@
         lucide.createIcons();
 
         initContracts();
-        showToast(`Connecté : ${shortAddr(userAddress)}`, "success");
+        showToast(`Connecté sur Base Mainnet : ${shortAddr(userAddress)}`, "success");
       } catch (err) {
         console.error(err);
         showToast("Échec de connexion MetaMask", "error");

@@ -587,7 +587,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 8px;">
             <h1 class="brand-title">Brokex Gold</h1>
-            <span class="brand-badge">Base Sepolia</span>
+            <span class="brand-badge" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3);">Base Mainnet</span>
           </div>
           <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">XAU/USD Autonomous Multi-Asset Perpetuals</p>
         </div>
@@ -889,22 +889,23 @@
 
   <!-- Javascript Logic -->
   <script>
-    // Configuration Réseau & Contrats Déployés
+    // Configuration Réseau & Contrats Déployés sur Base Mainnet
     const RPC_URLS = [
-      "https://api.developer.coinbase.com/rpc/v1/base-sepolia/h6Jh2uThY6yIgosEwH3eK7rm3yQWNV0h",
-      "https://base-sepolia.drpc.org",
-      "https://sepolia.base.org"
+      "https://mainnet.base.org",
+      "https://base.drpc.org",
+      "https://base-rpc.publicnode.com",
+      "https://1rpc.io/base"
     ];
 
     let currentRpcIndex = 0;
     const GOLD_ASSET_ID = 5500;
-    const SUPRA_CONTRACT_ADDRESS = "0x391Ab9ad5C4BFee04eA508b0a0Cf499198D015e3";
+    const SUPRA_CONTRACT_ADDRESS = "0x2FA6DbFe4291136Cf272E1A3294362b6651e8517";
 
-    // Adresses déployées sur Base Sepolia
-    const CORE_ADDRESS = "0x171386dEaBFdd281c29345F12996bA35f1Aed0d2";
-    const VAULT_ADDRESS = "0xa35af336059Db7659b5f1565d9F9309323961067";
-    const LENS_ADDRESS = "0x9CE55cAbB24f01849B5ac00cB86C2C8CAE9EDF20";
-    const USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+    // Adresses déployées sur Base Mainnet
+    const CORE_ADDRESS = "0x252487bE9867eF47A194402d178Ee8E555466dd9";
+    const VAULT_ADDRESS = "0xB36e1eDF743352D67E8B24C0A8BD8fc2c229EB4e";
+    const LENS_ADDRESS = "0x631C66fE969Ca48840b7CF85CE0f06aF93EFf3ff";
+    const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 
     // ABIs
     const USDC_ABI = [
@@ -1059,22 +1060,22 @@
       try {
         const browserProvider = new ethers.BrowserProvider(window.ethereum);
         const network = await browserProvider.getNetwork();
-        if (network.chainId !== 84532n) {
+        if (network.chainId !== 8453n) {
           try {
             await window.ethereum.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x14a34' }]
+              params: [{ chainId: '0x2105' }] // Base Mainnet 8453
             });
           } catch (switchErr) {
             if (switchErr.code === 4902) {
               await window.ethereum.request({
                 method: 'wallet_addEthereumChain',
                 params: [{
-                  chainId: '0x14a34',
-                  chainName: 'Base Sepolia',
-                  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-                  rpcUrls: ['https://sepolia.base.org'],
-                  blockExplorerUrls: ['https://sepolia.basescan.org']
+                  chainId: '0x2105',
+                  chainName: 'Base Mainnet',
+                  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['https://mainnet.base.org'],
+                  blockExplorerUrls: ['https://basescan.org']
                 }]
               });
             }

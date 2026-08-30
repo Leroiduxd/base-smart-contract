@@ -8,7 +8,7 @@ const web3 = new Web3();
 const OracleProofABI = require('./supra-pull-client/rest/resources/oracleProof.json');
 
 const PORT = 3333;
-const REST_URL = 'https://rpc-testnet-dora-2.supra.com';
+const REST_URL = 'https://rpc-mainnet-dora-2.supra.com';
 
 async function fetchSupraProof(assetId) {
     const response = await axios.post(`${REST_URL}/get_proof`, {
