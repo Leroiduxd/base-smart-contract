@@ -81,7 +81,7 @@
     ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
 
-    /* Top Navigation Bar */
+    /* Header */
     header {
       background: rgba(12, 12, 16, 0.85);
       backdrop-filter: blur(16px);
@@ -439,7 +439,93 @@
       margin-top: 4px;
     }
 
-    /* Assets Table */
+    /* Assets Detailed Cards */
+    .asset-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .asset-card:hover {
+      border-color: var(--border-focus);
+    }
+
+    .asset-card-header {
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .asset-card-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .asset-icon-box {
+      width: 42px;
+      height: 42px;
+      background: #ffffff;
+      color: #000000;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .asset-card-body {
+      padding: 24px;
+    }
+
+    .params-category-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .params-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .param-item {
+      background: var(--bg-black);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+    }
+
+    .param-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+
+    .param-val {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-pure);
+    }
+
+    /* Table fallback */
     .table-responsive {
       overflow-x: auto;
     }
@@ -469,9 +555,6 @@
       vertical-align: middle;
     }
 
-    table.admin-table tbody tr {
-      transition: background 0.15s ease;
-    }
     table.admin-table tbody tr:hover {
       background: var(--bg-surface-elevated);
     }
@@ -498,12 +581,6 @@
       background: var(--badge-red-bg);
       color: var(--badge-red-text);
       border: 1px solid var(--badge-red-border);
-    }
-
-    .badge-warning {
-      background: var(--badge-amber-bg);
-      color: var(--badge-amber-text);
-      border: 1px solid var(--badge-amber-border);
     }
 
     .badge-neutral {
@@ -595,7 +672,7 @@
       line-height: 1.4;
     }
 
-    /* Presets Strip */
+    /* Presets Box */
     .presets-box {
       background: var(--bg-surface-elevated);
       border: 1px dashed var(--border-focus);
@@ -628,7 +705,7 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
@@ -648,7 +725,7 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-focus);
       border-radius: var(--radius-xl);
-      max-width: 600px;
+      max-width: 720px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
@@ -723,17 +800,9 @@
       to { transform: translateX(0); opacity: 1; }
     }
 
-    /* Monospace Text helper */
     .mono { font-family: var(--font-mono); }
     .dim { color: var(--text-tertiary); }
     .white { color: var(--text-pure); }
-
-    /* Action bar */
-    .actions-cell {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
   </style>
 </head>
 
@@ -753,7 +822,7 @@
       <div class="nav-actions">
         <div class="network-badge">
           <div class="network-dot" id="network-indicator"></div>
-          <span id="network-name">Non Connecté</span>
+          <span id="network-name">Lecture RPC Base</span>
         </div>
 
         <button class="btn btn-secondary btn-sm" id="btn-refresh" title="Actualiser les données on-chain">
@@ -809,14 +878,14 @@
 
     <!-- Main Tabs Navigation -->
     <div class="tabs-nav">
-      <button class="tab-btn active" data-tab="tab-overview">
-        <i data-lucide="activity" style="width: 16px; height: 16px;"></i> Vue d'ensemble
+      <button class="tab-btn active" data-tab="tab-markets">
+        <i data-lucide="layers" style="width: 16px; height: 16px;"></i> Gestion des Marchés Listés
       </button>
-      <button class="tab-btn" data-tab="tab-markets">
-        <i data-lucide="layers" style="width: 16px; height: 16px;"></i> Gestion des Marchés
+      <button class="tab-btn" data-tab="tab-overview">
+        <i data-lucide="activity" style="width: 16px; height: 16px;"></i> Vue d'ensemble Protocole
       </button>
       <button class="tab-btn" data-tab="tab-new-asset">
-        <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Lister un Actif
+        <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Lister un Nouveau Marché
       </button>
       <button class="tab-btn" data-tab="tab-vault">
         <i data-lucide="vault" style="width: 16px; height: 16px;"></i> Vault & Trésorerie
@@ -827,9 +896,36 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- TAB 1: OVERVIEW -->
+    <!-- TAB 1: MARKETS MANAGEMENT (DEFAULT TAB) -->
     <!-- ========================================================================= -->
-    <div class="tab-pane active" id="tab-overview">
+    <div class="tab-pane active" id="tab-markets">
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">
+              <i data-lucide="list" style="width: 20px; height: 20px;"></i> Marchés Actifs sur BrokexCore
+            </div>
+            <div class="section-desc">Liste complète de tous les actifs listés on-chain avec leurs 19 paramètres de risque</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-go-new-asset">
+            <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Ajouter un Nouveau Marché
+          </button>
+        </div>
+
+        <!-- Dynamic Container for Active Assets Cards -->
+        <div id="markets-container">
+          <div style="text-align: center; color: var(--text-tertiary); padding: 48px;">
+            <i data-lucide="loader-2" class="spin" style="width: 28px; height: 28px; margin-bottom: 12px;"></i>
+            <div>Chargement des marchés depuis Base Mainnet...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: OVERVIEW -->
+    <!-- ========================================================================= -->
+    <div class="tab-pane" id="tab-overview">
 
       <!-- Metrics Cards -->
       <div class="metrics-grid">
@@ -904,50 +1000,6 @@
         </div>
       </div>
 
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- TAB 2: MARKETS MANAGEMENT -->
-    <!-- ========================================================================= -->
-    <div class="tab-pane" id="tab-markets">
-      <div class="section-card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">
-              <i data-lucide="list" style="width: 20px; height: 20px;"></i> Liste des Marchés Actifs
-            </div>
-            <div class="section-desc">Gérez l'ouverture, le garde-fou Chainlink et les paramètres de chaque marché</div>
-          </div>
-          <button class="btn btn-primary btn-sm" id="btn-go-new-asset">
-            <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Ajouter un Nouveau Marché
-          </button>
-        </div>
-
-        <div class="table-responsive">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Marché</th>
-                <th>Statut Session</th>
-                <th>Levier</th>
-                <th>Open Interest (Long / Short)</th>
-                <th>Spreads Actuels</th>
-                <th>Taux Borrow / H</th>
-                <th>Garde-Fou Chainlink</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="markets-table-body">
-              <tr>
-                <td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 32px;">
-                  Connectez votre wallet et renseignez les adresses pour charger les marchés.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
     <!-- ========================================================================= -->
@@ -1301,9 +1353,15 @@
 
       <form id="form-edit-asset">
         <input type="hidden" id="edit-assetId">
-        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+
+        <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 16px;">
+          Toutes les modifications prennent effet immédiatement on-chain pour les nouveaux trades.
+        </div>
+
+        <div class="params-category-title">1. Levier & Volumes</div>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 16px;">
           <div class="form-group">
-            <label>Levier Min / Max <span class="unit">x</span></label>
+            <label>Levier Min / Max <span class="unit">x (entiers)</span></label>
             <div style="display: flex; gap: 6px;">
               <input type="number" class="form-control" id="edit-minLev" required>
               <input type="number" class="form-control" id="edit-maxLev" required>
@@ -1314,7 +1372,7 @@
             <input type="number" step="any" class="form-control" id="edit-minTradeSize" required>
           </div>
           <div class="form-group">
-            <label>Commission <span class="unit">%</span></label>
+            <label>Commission d'Ouverture <span class="unit">%</span></label>
             <input type="number" step="any" class="form-control" id="edit-commission" required>
           </div>
           <div class="form-group">
@@ -1322,13 +1380,17 @@
             <input type="number" step="any" class="form-control" id="edit-maxTraderOI" required>
           </div>
           <div class="form-group">
-            <label>Max Market OI <span class="unit">USDC</span></label>
+            <label>Max Market OI (Capacité Totale) <span class="unit">USDC</span></label>
             <input type="number" step="any" class="form-control" id="edit-maxOpenInterest" required>
           </div>
           <div class="form-group">
-            <label>Max Skew <span class="unit">USDC</span></label>
+            <label>Max Skew (Déséquilibre Max) <span class="unit">USDC</span></label>
             <input type="number" step="any" class="form-control" id="edit-maxSkew" required>
           </div>
+        </div>
+
+        <div class="params-category-title">2. Spreads Dynamiques</div>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 16px;">
           <div class="form-group">
             <label>Spreads Min / Max <span class="unit">%</span></label>
             <div style="display: flex; gap: 6px;">
@@ -1337,11 +1399,23 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Spread Virtual OI <span class="unit">USDC</span></label>
+            <label>Spread Virtual OI (Buffer) <span class="unit">USDC</span></label>
             <input type="number" step="any" class="form-control" id="edit-spreadVirtualOI" required>
           </div>
           <div class="form-group">
-            <label>Borrow Hourly Base / Max <span class="unit">%</span></label>
+            <label>Pénalité Max Dominant <span class="unit">%</span></label>
+            <input type="number" step="any" class="form-control" id="edit-maxSpreadPenalty" required>
+          </div>
+          <div class="form-group">
+            <label>Réduction Max Minoritaire <span class="unit">%</span></label>
+            <input type="number" step="any" class="form-control" id="edit-maxSpreadDiscount" required>
+          </div>
+        </div>
+
+        <div class="params-category-title">3. Taux d'Emprunt (Borrow Fees)</div>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 16px;">
+          <div class="form-group">
+            <label>Borrow Horaire Base / Max <span class="unit">% / h</span></label>
             <div style="display: flex; gap: 6px;">
               <input type="number" step="any" class="form-control" id="edit-baseBorrow" required>
               <input type="number" step="any" class="form-control" id="edit-maxBorrow" required>
@@ -1352,27 +1426,31 @@
             <input type="number" step="any" class="form-control" id="edit-borrowVirtualOI" required>
           </div>
           <div class="form-group">
-            <label>Recovery Days <span class="unit">Jours</span></label>
+            <label>Amortissement Risque <span class="unit">Jours</span></label>
             <input type="number" class="form-control" id="edit-recoveryDays" required>
           </div>
+        </div>
+
+        <div class="params-category-title">4. Risque Vault & Solvabilité</div>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
           <div class="form-group">
-            <label>Max Profit Rate <span class="unit">%</span></label>
+            <label>Plafond de Gain (Max Profit Rate) <span class="unit">%</span></label>
             <input type="number" step="any" class="form-control" id="edit-maxProfitRate" required>
           </div>
           <div class="form-group">
-            <label>Locked Capital Rate <span class="unit">%</span></label>
+            <label>Capital Bloqué (Locked Capital Rate) <span class="unit">%</span></label>
             <input type="number" step="any" class="form-control" id="edit-lockedCapitalRate" required>
           </div>
           <div class="form-group">
-            <label>Liquidation Threshold <span class="unit">%</span></label>
+            <label>Seuil de Liquidation <span class="unit">%</span></label>
             <input type="number" step="any" class="form-control" id="edit-liquidationThreshold" required>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" class="btn btn-secondary" data-close-modal="modal-edit-asset">Annuler</button>
           <button type="submit" class="btn btn-primary" id="btn-save-edit-asset">
-            Enregistrer la Nouvelle Configuration
+            <i data-lucide="check" style="width: 14px; height: 14px;"></i> Enregistrer les Modifications (setAssetConfig)
           </button>
         </div>
       </form>
@@ -1395,14 +1473,14 @@
         <input type="hidden" id="cl-assetId">
         <div class="form-group" style="margin-bottom: 16px;">
           <label>Adresse du Feed Proxy Chainlink (Base)</label>
-          <input type="text" class="form-control" id="cl-feed-addr" placeholder="0x... (laisser vide pour désactiver)" spellcheck="false">
-          <span class="form-help">Entrez l'adresse de l'AggregatorProxy Chainlink. Mettre 0x0 pour désactiver le garde-fou.</span>
+          <input type="text" class="form-control" id="cl-feed-addr" placeholder="0x... (laisser vide ou 0x0 pour désactiver)" spellcheck="false">
+          <span class="form-help">Proxy Aggregator Chainlink sur Base. Si configuré, tout écart supérieur au seuil rejettera l'ordre (Fail-Closed).</span>
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
           <label>Déviation Max Tolérée <span class="unit">% (ex: 0.75, 1.125, 1.5)</span></label>
           <input type="number" step="any" class="form-control" id="cl-max-deviation" placeholder="ex: 0.75">
-          <span class="form-help">Si l'écart entre Supra et Chainlink dépasse ce pourcentage, la transaction sera rejetée.</span>
+          <span class="form-help">Écart relatif maximal autorisé entre le prix Supra DORA et Chainlink.</span>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
@@ -1447,7 +1525,7 @@
       "function setMarketClosed(uint256 assetId, bool closed)",
       "function setChainlinkGuard(uint256 assetId, address feed, uint32 maxDeviation)",
       "function listAsset(uint256 assetId, tuple(uint8 minLeverage, uint8 maxLeverage, uint64 minTradeSize, uint24 commissionRate, uint64 maxTraderOI, uint128 maxOpenInterest, uint128 maxSkew, uint24 minSpread, uint24 maxSpread, uint128 spreadVirtualOI, uint24 maxSpreadPenalty, uint24 maxSpreadDiscount, uint24 baseBorrowRateHourly, uint24 maxBorrowRateHourly, uint128 borrowVirtualOI, uint16 recoveryTimeDays, uint24 maxProfitRate, uint24 lockedCapitalRate, uint24 liquidationThreshold) config)",
-      "function updateAssetConfig(uint256 assetId, tuple(uint8 minLeverage, uint8 maxLeverage, uint64 minTradeSize, uint24 commissionRate, uint64 maxTraderOI, uint128 maxOpenInterest, uint128 maxSkew, uint24 minSpread, uint24 maxSpread, uint128 spreadVirtualOI, uint24 maxSpreadPenalty, uint24 maxSpreadDiscount, uint24 baseBorrowRateHourly, uint24 maxBorrowRateHourly, uint128 borrowVirtualOI, uint16 recoveryTimeDays, uint24 maxProfitRate, uint24 lockedCapitalRate, uint24 liquidationThreshold) config)",
+      "function setAssetConfig(uint256 assetId, tuple(uint8 minLeverage, uint8 maxLeverage, uint64 minTradeSize, uint24 commissionRate, uint64 maxTraderOI, uint128 maxOpenInterest, uint128 maxSkew, uint24 minSpread, uint24 maxSpread, uint128 spreadVirtualOI, uint24 maxSpreadPenalty, uint24 maxSpreadDiscount, uint24 baseBorrowRateHourly, uint24 maxBorrowRateHourly, uint128 borrowVirtualOI, uint16 recoveryTimeDays, uint24 maxProfitRate, uint24 lockedCapitalRate, uint24 liquidationThreshold) newConfig)",
       "function setAssetSecurityMode(uint256 assetId, uint8 newMode)",
       "function delistAsset(uint256 assetId)",
       "function setReferralRewardRate(uint256 newRate)",
@@ -1470,33 +1548,27 @@
       "function decimals() view returns (uint8)"
     ];
 
-    const LENS_ABI = [
-      "function getProtocolInfo() view returns (tuple(address owner, address pendingOwner, address usdc, address supra, address vault, uint256 lockedCapital, uint256 vaultBalance, uint256 latestTradeId, uint8 securityMode, uint256[] activeAssets))",
-      "function getAssetInfo(uint256) view returns (tuple(uint256 assetId, string name, string symbol, bool listed, uint8 assetSecurityMode, uint256 currentPrice, uint256 minLeverage, uint256 maxLeverage, uint256 minTradeSize, uint256 commissionRate, uint256 maxTraderOI, uint256 maxOpenInterest, uint256 maxSkew, uint256 dynamicMaxOILong, uint256 dynamicMaxOIShort, uint256 minSpread, uint256 maxSpread, uint256 spreadVirtualOI, uint256 maxSpreadPenalty, uint256 maxSpreadDiscount, uint256 currentSpreadLong, uint256 currentSpreadShort, uint256 baseBorrowRateHourly, uint256 maxBorrowRateHourly, uint256 borrowVirtualOI, uint256 currentBorrowRateHourlyLong, uint256 currentBorrowRateHourlyShort, uint256 maxProfitRate, uint256 recoveryTimeDays, uint256 openInterestLong, uint256 openInterestShort, uint256 assetLockedCapital, uint256 longBorrowIndex, uint256 shortBorrowIndex, uint256 currentLongBorrowIndex, uint256 currentShortBorrowIndex, uint256 lastBorrowUpdate))"
-    ];
-
     // State Variables
     let provider = null;
+    let readProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
     let signer = null;
     let userAddress = null;
-    let currentNetwork = null;
     let coreContract = null;
     let vaultContract = null;
     let usdcContract = null;
-    let lensContract = null;
     let protocolOwner = null;
 
     const PRECISION = 1000000n; // 1e6
 
-    // Default Addresses (Empty / Loaded from LocalStorage)
-    const STORAGE_KEY = "brokex_admin_contracts_v1";
-
+    // Verified Base Mainnet Contract Addresses
     const MAINNET_ADDRS = {
       core: "0x252487bE9867eF47A194402d178Ee8E555466dd9",
       vault: "0xB36e1eDF743352D67E8B24C0A8BD8fc2c229EB4e",
       lens: "0x631C66fE969Ca48840b7CF85CE0f06aF93EFf3ff",
       usdc: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
     };
+
+    const STORAGE_KEY = "brokex_admin_contracts_v1";
 
     function showToast(message, type = "info") {
       const container = document.getElementById("toast-container");
@@ -1563,7 +1635,7 @@
         usdc: document.getElementById("cfg-usdc").value.trim()
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      showToast("Adresses de contrats sauvegardées localement !", "success");
+      showToast("Adresses de contrats sauvegardées !", "success");
       initContracts();
     }
 
@@ -1574,7 +1646,6 @@
       document.getElementById("cfg-lens").value = MAINNET_ADDRS.lens;
       document.getElementById("cfg-usdc").value = MAINNET_ADDRS.usdc;
       saveAddresses();
-      showToast("Adresses Base Mainnet chargées !", "success");
     });
 
     // Preset Addresses for Sepolia
@@ -1593,15 +1664,12 @@
     function initContracts() {
       const coreAddr = document.getElementById("cfg-core").value.trim();
       const vaultAddr = document.getElementById("cfg-vault").value.trim();
-      const lensAddr = document.getElementById("cfg-lens").value.trim();
       const usdcAddr = document.getElementById("cfg-usdc").value.trim();
 
-      const runner = signer || provider;
-      if (!runner) return;
+      const runner = signer || readProvider;
 
       coreContract = coreAddr && ethers.isAddress(coreAddr) ? new ethers.Contract(coreAddr, CORE_ABI, runner) : null;
       vaultContract = vaultAddr && ethers.isAddress(vaultAddr) ? new ethers.Contract(vaultAddr, VAULT_ABI, runner) : null;
-      lensContract = lensAddr && ethers.isAddress(lensAddr) ? new ethers.Contract(lensAddr, LENS_ABI, runner) : null;
       usdcContract = usdcAddr && ethers.isAddress(usdcAddr) ? new ethers.Contract(usdcAddr, ERC20_ABI, runner) : null;
 
       if (coreContract) {
@@ -1612,7 +1680,7 @@
     // Connect Wallet (MetaMask)
     async function connectWallet() {
       if (!window.ethereum) {
-        showToast("Veuillez installer MetaMask pour utiliser ce dashboard", "error");
+        showToast("Veuillez installer MetaMask", "error");
         return;
       }
 
@@ -1623,7 +1691,6 @@
         userAddress = accounts[0];
 
         const network = await provider.getNetwork();
-        currentNetwork = network;
 
         document.getElementById("network-name").textContent = network.chainId === 8453n ? "Base Mainnet" : network.chainId === 84532n ? "Base Sepolia" : `Chain ID: ${network.chainId}`;
         document.getElementById("network-indicator").className = "network-dot active";
@@ -1700,22 +1767,27 @@
         const activeAssetIds = await coreContract.getActiveAssets();
         document.getElementById("stat-active-markets").textContent = activeAssetIds.length.toString();
 
-        await renderMarketsTable(activeAssetIds);
+        await renderMarketsList(activeAssetIds);
         lucide.createIcons();
       } catch (err) {
         console.error("Erreur refresh:", err);
       }
     }
 
-    // Render Markets Table
-    async function renderMarketsTable(assetIds) {
-      const tbody = document.getElementById("markets-table-body");
+    // Render Detailed Markets Cards
+    async function renderMarketsList(assetIds) {
+      const container = document.getElementById("markets-container");
       if (assetIds.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 32px;">Aucun actif listé sur ce contrat. Utilisez l'onglet "Lister un Actif" pour en créer un.</td></tr>`;
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-tertiary); padding: 48px;">
+            <i data-lucide="alert-circle" style="width: 32px; height: 32px; margin-bottom: 12px;"></i>
+            <div>Aucun actif listé sur ce smart contract. Utilisez l'onglet "Lister un Nouveau Marché" pour en ajouter un.</div>
+          </div>
+        `;
         return;
       }
 
-      tbody.innerHTML = "";
+      container.innerHTML = "";
 
       for (const assetId of assetIds) {
         try {
@@ -1725,6 +1797,7 @@
           const clGuard = await coreContract.chainlinkGuards(assetId);
           const spreads = await coreContract.currentSpreads(assetId);
           const borrowRates = await coreContract.currentBorrowRates(assetId);
+          const maxOIs = await coreContract.dynamicMaxOI(assetId);
 
           const longOI = Number(state.openInterestLong) / 1e6;
           const shortOI = Number(state.openInterestShort) / 1e6;
@@ -1732,64 +1805,162 @@
           const longPct = totalOI > 0 ? ((longOI / totalOI) * 100).toFixed(0) : "50";
           const shortPct = totalOI > 0 ? (100 - Number(longPct)).toFixed(0) : "50";
 
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td class="mono font-bold">${assetId.toString()}</td>
-            <td>
-              <div style="font-weight: 700; color: #fff;">${assetId === 5500n ? "Gold (XAU/USD)" : `Asset #${assetId}`}</div>
-              <div style="font-size: 11px; color: var(--text-tertiary);">Collateral Min: ${formatUSDC(config.minTradeSize)} USDC</div>
-            </td>
-            <td>
-              ${isClosed 
-                ? `<span class="badge badge-closed"><i data-lucide="lock" style="width: 10px; height: 10px;"></i> FERMÉ</span>`
-                : `<span class="badge badge-open"><i data-lucide="check" style="width: 10px; height: 10px;"></i> OUVERT</span>`
-              }
-            </td>
-            <td class="mono">${config.minLeverage}x - ${config.maxLeverage}x</td>
-            <td>
-              <div class="skew-bar-wrapper">
-                <div class="skew-bar-labels">
-                  <span>L: ${longOI.toFixed(0)}</span>
-                  <span>S: ${shortOI.toFixed(0)}</span>
-                </div>
-                <div class="skew-bar-track">
-                  <div class="skew-bar-long" style="width: ${longPct}%" title="Long: ${longPct}%"></div>
-                  <div class="skew-bar-short" style="width: ${shortPct}%" title="Short: ${shortPct}%"></div>
+          const assetName = assetId === 5500n ? "Gold (XAU/USD)" : `Marché #${assetId}`;
+          const assetSymbol = assetId === 5500n ? "XAU" : `ID-${assetId}`;
+
+          const card = document.createElement("div");
+          card.className = "asset-card";
+          card.innerHTML = `
+            <div class="asset-card-header">
+              <div class="asset-card-title">
+                <div class="asset-icon-box">${assetSymbol.slice(0, 3)}</div>
+                <div>
+                  <div style="font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    ${assetName} <span class="badge badge-neutral">Asset ID: ${assetId}</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">
+                    Statut: ${state.listed ? '<span style="color: #4ade80;">Listé</span>' : '<span style="color: #f87171;">Délisté</span>'} | 
+                    Session: ${isClosed 
+                      ? '<span style="color: #f87171; font-weight: 600;">🔒 FERMÉ</span>' 
+                      : '<span style="color: #4ade80; font-weight: 600;">🟢 OUVERT</span>'}
+                  </div>
                 </div>
               </div>
-            </td>
-            <td class="mono">
-              <div>L: ${formatPercent(spreads.longSpread, 3)}</div>
-              <div style="color: var(--text-tertiary);">S: ${formatPercent(spreads.shortSpread, 3)}</div>
-            </td>
-            <td class="mono">
-              <div>L: ${formatPercent(borrowRates.longRate, 4)}</div>
-              <div style="color: var(--text-tertiary);">S: ${formatPercent(borrowRates.shortRate, 4)}</div>
-            </td>
-            <td>
-              ${clGuard.feed !== ethers.ZeroAddress 
-                ? `<span class="badge badge-neutral" title="Feed: ${clGuard.feed}"><i data-lucide="shield" style="width: 10px; height: 10px;"></i> ±${(Number(clGuard.maxDeviation)/1e4).toFixed(2)}%</span>`
-                : `<span class="badge badge-closed">Désactivé</span>`
-              }
-            </td>
-            <td>
-              <div class="actions-cell">
-                <button class="btn btn-secondary btn-sm" onclick="toggleMarketStatus(${assetId}, ${!isClosed})" title="${isClosed ? 'Ouvrir le marché' : 'Fermer le marché'}">
-                  <i data-lucide="${isClosed ? 'unlock' : 'lock'}" style="width: 12px; height: 12px;"></i>
-                  ${isClosed ? "Ouvrir" : "Fermer"}
+
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button class="btn ${isClosed ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="toggleMarketStatus(${assetId}, ${!isClosed})">
+                  <i data-lucide="${isClosed ? 'unlock' : 'lock'}" style="width: 14px; height: 14px;"></i>
+                  ${isClosed ? "Ouvrir Marché" : "Fermer Marché"}
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="openEditModal(${assetId})" title="Modifier paramètres">
-                  <i data-lucide="settings" style="width: 12px; height: 12px;"></i>
+                <button class="btn btn-secondary btn-sm" onclick="openEditModal(${assetId})">
+                  <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Modifier Configuration
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="openGuardModal(${assetId})" title="Garde-Fou Chainlink">
-                  <i data-lucide="shield" style="width: 12px; height: 12px;"></i>
+                <button class="btn btn-secondary btn-sm" onclick="openGuardModal(${assetId})">
+                  <i data-lucide="shield" style="width: 14px; height: 14px;"></i> Garde-Fou Chainlink
                 </button>
               </div>
-            </td>
+            </div>
+
+            <div class="asset-card-body">
+              <!-- Category 1: Volumes & Skew -->
+              <div class="params-category-title">
+                <i data-lucide="bar-chart-3" style="width: 14px; height: 14px;"></i> 1. Volumes & Déséquilibre (Skew)
+              </div>
+              <div class="params-grid">
+                <div class="param-item">
+                  <div class="param-label">Open Interest Long</div>
+                  <div class="param-val" style="color: #4ade80;">${formatUSDC(state.openInterestLong)} USDC</div>
+                  <div class="dim" style="font-size: 11px; margin-top: 2px;">Max Dynamic: ${formatUSDC(maxOIs.maxOILong)}</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Open Interest Short</div>
+                  <div class="param-val" style="color: #f87171;">${formatUSDC(state.openInterestShort)} USDC</div>
+                  <div class="dim" style="font-size: 11px; margin-top: 2px;">Max Dynamic: ${formatUSDC(maxOIs.maxOIShort)}</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Ratio Déséquilibre (Skew)</div>
+                  <div class="skew-bar-wrapper" style="width: 100%; margin-top: 4px;">
+                    <div class="skew-bar-labels">
+                      <span>Long: ${longPct}%</span>
+                      <span>Short: ${shortPct}%</span>
+                    </div>
+                    <div class="skew-bar-track">
+                      <div class="skew-bar-long" style="width: ${longPct}%"></div>
+                      <div class="skew-bar-short" style="width: ${shortPct}%"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Max Skew Autorisé</div>
+                  <div class="param-val">${formatUSDC(config.maxSkew)} USDC</div>
+                </div>
+              </div>
+
+              <!-- Category 2: Levier & Tailles -->
+              <div class="params-category-title">
+                <i data-lucide="sliders" style="width: 14px; height: 14px;"></i> 2. Leviers & Limites de Positions
+              </div>
+              <div class="params-grid">
+                <div class="param-item">
+                  <div class="param-label">Plage de Levier</div>
+                  <div class="param-val">${config.minLeverage}x - ${config.maxLeverage}x</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Collatéral Minimum</div>
+                  <div class="param-val">${formatUSDC(config.minTradeSize)} USDC</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Commission d'Ouverture</div>
+                  <div class="param-val">${formatPercent(config.commissionRate, 2)}</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Max OI par Trader</div>
+                  <div class="param-val">${formatUSDC(config.maxTraderOI)} USDC</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Max OI Total du Marché</div>
+                  <div class="param-val">${formatUSDC(config.maxOpenInterest)} USDC</div>
+                </div>
+              </div>
+
+              <!-- Category 3: Spreads & Emprunts -->
+              <div class="params-category-title">
+                <i data-lucide="percent" style="width: 14px; height: 14px;"></i> 3. Spreads & Taux d'Emprunt Horaires
+              </div>
+              <div class="params-grid">
+                <div class="param-item">
+                  <div class="param-label">Spreads Actuels (L / S)</div>
+                  <div class="param-val">L: ${formatPercent(spreads.longSpread, 3)} | S: ${formatPercent(spreads.shortSpread, 3)}</div>
+                  <div class="dim" style="font-size: 11px; margin-top: 2px;">Min: ${formatPercent(config.minSpread, 2)} | Max: ${formatPercent(config.maxSpread, 2)}</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Taux Borrow Horaires (L / S)</div>
+                  <div class="param-val">L: ${formatPercent(borrowRates.longRate, 4)}/h | S: ${formatPercent(borrowRates.shortRate, 4)}/h</div>
+                  <div class="dim" style="font-size: 11px; margin-top: 2px;">Base: ${formatPercent(config.baseBorrowRateHourly, 4)}/h | Max: ${formatPercent(config.maxBorrowRateHourly, 4)}/h</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Virtual OI (Spread / Borrow)</div>
+                  <div class="param-val">${formatUSDC(config.spreadVirtualOI)} / ${formatUSDC(config.borrowVirtualOI)} USDC</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Amortissement Risque</div>
+                  <div class="param-val">${config.recoveryTimeDays} Jours</div>
+                </div>
+              </div>
+
+              <!-- Category 4: Solvabilité & Garde-Fou -->
+              <div class="params-category-title">
+                <i data-lucide="shield-alert" style="width: 14px; height: 14px;"></i> 4. Solvabilité & Garde-Fou Chainlink
+              </div>
+              <div class="params-grid">
+                <div class="param-item">
+                  <div class="param-label">Max Profit Rate</div>
+                  <div class="param-val">${formatPercent(config.maxProfitRate, 1)}</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Locked Capital Rate (Vault)</div>
+                  <div class="param-val">${formatPercent(config.lockedCapitalRate, 1)}</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Seuil de Liquidation</div>
+                  <div class="param-val">${formatPercent(config.liquidationThreshold, 1)}</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-label">Garde-Fou Chainlink (Base)</div>
+                  <div class="param-val">
+                    ${clGuard.feed !== ethers.ZeroAddress 
+                      ? `<span style="color: #4ade80;">Actif (±${(Number(clGuard.maxDeviation)/1e4).toFixed(2)}%)</span>` 
+                      : `<span style="color: #71717a;">Désactivé</span>`}
+                  </div>
+                  <div class="dim" style="font-size: 10px; margin-top: 2px;">${shortAddr(clGuard.feed)}</div>
+                </div>
+              </div>
+
+            </div>
           `;
-          tbody.appendChild(tr);
+          container.appendChild(card);
         } catch (e) {
-          console.error("Asset row error:", e);
+          console.error("Erreur asset render:", e);
         }
       }
     }
@@ -1801,7 +1972,7 @@
         return;
       }
       try {
-        showToast(`Transaction envoyée : ${setClosed ? 'Fermeture' : 'Ouverture'} du marché...`, "info");
+        showToast(`Transaction envoyée : ${setClosed ? 'Fermeture' : 'Ouverture'} du marché #${assetId}...`, "info");
         const tx = await coreContract.setMarketClosed(assetId, setClosed);
         await tx.wait(1);
         showToast(`Marché #${assetId} ${setClosed ? 'FERMÉ' : 'OUVERT'} avec succès !`, "success");
@@ -1811,6 +1982,84 @@
         showToast(`Échec : ${err.reason || err.message}`, "error");
       }
     };
+
+    // Open Edit Config Modal & Prefill
+    window.openEditModal = async function(assetId) {
+      if (!coreContract) return;
+      try {
+        const config = await coreContract.assetConfigs(assetId);
+        document.getElementById("edit-assetId").value = assetId.toString();
+        document.getElementById("modal-edit-title").textContent = `Modifier Paramètres - Marché #${assetId}`;
+
+        document.getElementById("edit-minLev").value = config.minLeverage;
+        document.getElementById("edit-maxLev").value = config.maxLeverage;
+        document.getElementById("edit-minTradeSize").value = Number(config.minTradeSize) / 1e6;
+        document.getElementById("edit-commission").value = (Number(config.commissionRate) / 1e4).toFixed(2);
+        document.getElementById("edit-maxTraderOI").value = Number(config.maxTraderOI) / 1e6;
+        document.getElementById("edit-maxOpenInterest").value = Number(config.maxOpenInterest) / 1e6;
+        document.getElementById("edit-maxSkew").value = Number(config.maxSkew) / 1e6;
+        document.getElementById("edit-minSpread").value = (Number(config.minSpread) / 1e4).toFixed(3);
+        document.getElementById("edit-maxSpread").value = (Number(config.maxSpread) / 1e4).toFixed(3);
+        document.getElementById("edit-spreadVirtualOI").value = Number(config.spreadVirtualOI) / 1e6;
+        document.getElementById("edit-maxSpreadPenalty").value = (Number(config.maxSpreadPenalty) / 1e4).toFixed(2);
+        document.getElementById("edit-maxSpreadDiscount").value = (Number(config.maxSpreadDiscount) / 1e4).toFixed(2);
+        document.getElementById("edit-baseBorrow").value = (Number(config.baseBorrowRateHourly) / 1e4).toFixed(4);
+        document.getElementById("edit-maxBorrow").value = (Number(config.maxBorrowRateHourly) / 1e4).toFixed(4);
+        document.getElementById("edit-borrowVirtualOI").value = Number(config.borrowVirtualOI) / 1e6;
+        document.getElementById("edit-recoveryDays").value = config.recoveryTimeDays;
+        document.getElementById("edit-maxProfitRate").value = (Number(config.maxProfitRate) / 1e4).toFixed(1);
+        document.getElementById("edit-lockedCapitalRate").value = (Number(config.lockedCapitalRate) / 1e4).toFixed(1);
+        document.getElementById("edit-liquidationThreshold").value = (Number(config.liquidationThreshold) / 1e4).toFixed(1);
+
+        document.getElementById("modal-edit-asset").classList.add("open");
+        lucide.createIcons();
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // Form Submit: Edit Asset Config (setAssetConfig)
+    document.getElementById("form-edit-asset").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!coreContract || !signer) {
+        showToast("Veuillez connecter votre wallet MetaMask", "error");
+        return;
+      }
+      const assetId = BigInt(document.getElementById("edit-assetId").value);
+      try {
+        const config = {
+          minLeverage: Number(document.getElementById("edit-minLev").value),
+          maxLeverage: Number(document.getElementById("edit-maxLev").value),
+          minTradeSize: BigInt(Math.round(Number(document.getElementById("edit-minTradeSize").value) * 1e6)),
+          commissionRate: Math.round((Number(document.getElementById("edit-commission").value) / 100) * 1e6),
+          maxTraderOI: BigInt(Math.round(Number(document.getElementById("edit-maxTraderOI").value) * 1e6)),
+          maxOpenInterest: BigInt(Math.round(Number(document.getElementById("edit-maxOpenInterest").value) * 1e6)),
+          maxSkew: BigInt(Math.round(Number(document.getElementById("edit-maxSkew").value) * 1e6)),
+          minSpread: Math.round((Number(document.getElementById("edit-minSpread").value) / 100) * 1e6),
+          maxSpread: Math.round((Number(document.getElementById("edit-maxSpread").value) / 100) * 1e6),
+          spreadVirtualOI: BigInt(Math.round(Number(document.getElementById("edit-spreadVirtualOI").value) * 1e6)),
+          maxSpreadPenalty: Math.round((Number(document.getElementById("edit-maxSpreadPenalty").value) / 100) * 1e6),
+          maxSpreadDiscount: Math.round((Number(document.getElementById("edit-maxSpreadDiscount").value) / 100) * 1e6),
+          baseBorrowRateHourly: Math.round((Number(document.getElementById("edit-baseBorrow").value) / 100) * 1e6),
+          maxBorrowRateHourly: Math.round((Number(document.getElementById("edit-maxBorrow").value) / 100) * 1e6),
+          borrowVirtualOI: BigInt(Math.round(Number(document.getElementById("edit-borrowVirtualOI").value) * 1e6)),
+          recoveryTimeDays: Number(document.getElementById("edit-recoveryDays").value),
+          maxProfitRate: Math.round((Number(document.getElementById("edit-maxProfitRate").value) / 100) * 1e6),
+          lockedCapitalRate: Math.round((Number(document.getElementById("edit-lockedCapitalRate").value) / 100) * 1e6),
+          liquidationThreshold: Math.round((Number(document.getElementById("edit-liquidationThreshold").value) / 100) * 1e6)
+        };
+
+        showToast("Signature de la mise à jour (setAssetConfig)...", "info");
+        const tx = await coreContract.setAssetConfig(assetId, config);
+        await tx.wait(1);
+        showToast(`Configuration du marché #${assetId} mise à jour avec succès !`, "success");
+        document.getElementById("modal-edit-asset").classList.remove("open");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec mise à jour : ${err.reason || err.message}`, "error");
+      }
+    });
 
     // Preset configurations for List Asset
     document.getElementById("btn-preset-gold").addEventListener("click", () => {
@@ -1917,86 +2166,16 @@
           liquidationThreshold: Math.round((Number(document.getElementById("f-liquidationThreshold").value) / 100) * 1e6)
         };
 
-        showToast("Signature de la transaction de listing...", "info");
+        showToast("Signature du listing sur BrokexCore...", "info");
         const tx = await coreContract.listAsset(assetId, config);
         await tx.wait(1);
 
-        showToast(`Marché #${assetId} listé avec succès sur BrokexCore !`, "success");
+        showToast(`Marché #${assetId} listé avec succès !`, "success");
         document.querySelector('[data-tab="tab-markets"]').click();
         refreshAllData();
       } catch (err) {
         console.error(err);
         showToast(`Échec du listing : ${err.reason || err.message}`, "error");
-      }
-    });
-
-    // Edit Modal Open & Save
-    window.openEditModal = async function(assetId) {
-      if (!coreContract) return;
-      try {
-        const config = await coreContract.assetConfigs(assetId);
-        document.getElementById("edit-assetId").value = assetId.toString();
-        document.getElementById("modal-edit-title").textContent = `Modifier Marché #${assetId}`;
-
-        document.getElementById("edit-minLev").value = config.minLeverage;
-        document.getElementById("edit-maxLev").value = config.maxLeverage;
-        document.getElementById("edit-minTradeSize").value = Number(config.minTradeSize) / 1e6;
-        document.getElementById("edit-commission").value = (Number(config.commissionRate) / 1e4).toFixed(2);
-        document.getElementById("edit-maxTraderOI").value = Number(config.maxTraderOI) / 1e6;
-        document.getElementById("edit-maxOpenInterest").value = Number(config.maxOpenInterest) / 1e6;
-        document.getElementById("edit-maxSkew").value = Number(config.maxSkew) / 1e6;
-        document.getElementById("edit-minSpread").value = (Number(config.minSpread) / 1e4).toFixed(3);
-        document.getElementById("edit-maxSpread").value = (Number(config.maxSpread) / 1e4).toFixed(3);
-        document.getElementById("edit-spreadVirtualOI").value = Number(config.spreadVirtualOI) / 1e6;
-        document.getElementById("edit-baseBorrow").value = (Number(config.baseBorrowRateHourly) / 1e4).toFixed(4);
-        document.getElementById("edit-maxBorrow").value = (Number(config.maxBorrowRateHourly) / 1e4).toFixed(4);
-        document.getElementById("edit-borrowVirtualOI").value = Number(config.borrowVirtualOI) / 1e6;
-        document.getElementById("edit-recoveryDays").value = config.recoveryTimeDays;
-        document.getElementById("edit-maxProfitRate").value = (Number(config.maxProfitRate) / 1e4).toFixed(1);
-        document.getElementById("edit-lockedCapitalRate").value = (Number(config.lockedCapitalRate) / 1e4).toFixed(1);
-        document.getElementById("edit-liquidationThreshold").value = (Number(config.liquidationThreshold) / 1e4).toFixed(1);
-
-        document.getElementById("modal-edit-asset").classList.add("open");
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    document.getElementById("form-edit-asset").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const assetId = BigInt(document.getElementById("edit-assetId").value);
-      try {
-        const config = {
-          minLeverage: Number(document.getElementById("edit-minLev").value),
-          maxLeverage: Number(document.getElementById("edit-maxLev").value),
-          minTradeSize: BigInt(Math.round(Number(document.getElementById("edit-minTradeSize").value) * 1e6)),
-          commissionRate: Math.round((Number(document.getElementById("edit-commission").value) / 100) * 1e6),
-          maxTraderOI: BigInt(Math.round(Number(document.getElementById("edit-maxTraderOI").value) * 1e6)),
-          maxOpenInterest: BigInt(Math.round(Number(document.getElementById("edit-maxOpenInterest").value) * 1e6)),
-          maxSkew: BigInt(Math.round(Number(document.getElementById("edit-maxSkew").value) * 1e6)),
-          minSpread: Math.round((Number(document.getElementById("edit-minSpread").value) / 100) * 1e6),
-          maxSpread: Math.round((Number(document.getElementById("edit-maxSpread").value) / 100) * 1e6),
-          spreadVirtualOI: BigInt(Math.round(Number(document.getElementById("edit-spreadVirtualOI").value) * 1e6)),
-          maxSpreadPenalty: 1200,
-          maxSpreadDiscount: 100,
-          baseBorrowRateHourly: Math.round((Number(document.getElementById("edit-baseBorrow").value) / 100) * 1e6),
-          maxBorrowRateHourly: Math.round((Number(document.getElementById("edit-maxBorrow").value) / 100) * 1e6),
-          borrowVirtualOI: BigInt(Math.round(Number(document.getElementById("edit-borrowVirtualOI").value) * 1e6)),
-          recoveryTimeDays: Number(document.getElementById("edit-recoveryDays").value),
-          maxProfitRate: Math.round((Number(document.getElementById("edit-maxProfitRate").value) / 100) * 1e6),
-          lockedCapitalRate: Math.round((Number(document.getElementById("edit-lockedCapitalRate").value) / 100) * 1e6),
-          liquidationThreshold: Math.round((Number(document.getElementById("edit-liquidationThreshold").value) / 100) * 1e6)
-        };
-
-        showToast("Signature de la mise à jour...", "info");
-        const tx = await coreContract.updateAssetConfig(assetId, config);
-        await tx.wait(1);
-        showToast("Configuration du marché mise à jour !", "success");
-        document.getElementById("modal-edit-asset").classList.remove("open");
-        refreshAllData();
-      } catch (err) {
-        console.error(err);
-        showToast(`Échec mise à jour : ${err.reason || err.message}`, "error");
       }
     });
 
@@ -2010,6 +2189,7 @@
         document.getElementById("cl-feed-addr").value = guard.feed === ethers.ZeroAddress ? "" : guard.feed;
         document.getElementById("cl-max-deviation").value = guard.maxDeviation === 0 ? "0.75" : (Number(guard.maxDeviation) / 1e4).toFixed(2);
         document.getElementById("modal-chainlink-guard").classList.add("open");
+        lucide.createIcons();
       } catch (e) {
         console.error(e);
       }
@@ -2037,7 +2217,7 @@
     // Vault: Approve USDC
     document.getElementById("btn-approve-usdc").addEventListener("click", async () => {
       if (!usdcContract || !vaultContract || !signer) {
-        showToast("Connectez MetaMask et vérifiez les adresses USDC / Vault", "error");
+        showToast("Connectez MetaMask", "error");
         return;
       }
       try {
@@ -2045,7 +2225,7 @@
         showToast("Approbation USDC en cours...", "info");
         const tx = await usdcContract.approve(vaultAddr, ethers.MaxUint256);
         await tx.wait(1);
-        showToast("USDC approuvé avec succès pour la Vault !", "success");
+        showToast("USDC approuvé pour la Vault !", "success");
       } catch (err) {
         console.error(err);
         showToast(`Échec d'approbation : ${err.reason || err.message}`, "error");
@@ -2145,7 +2325,7 @@
         showToast("Acceptation de la propriété...", "info");
         const tx = await coreContract.acceptOwnership();
         await tx.wait(1);
-        showToast("Vous êtes maintenant le nouveau Propriétaire officiel !", "success");
+        showToast("Vous êtes maintenant le Propriétaire officiel !", "success");
         refreshAllData();
       } catch (err) {
         console.error(err);
@@ -2221,6 +2401,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
       loadSavedAddresses();
+      initContracts();
       if (window.ethereum) {
         connectWallet();
       }
