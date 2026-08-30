@@ -31,11 +31,25 @@ function createStandardJson(contractFile, extraFiles = []) {
 
 const CONTRACTS = [
   {
+    name: "BrokexVault",
+    file: "BrokexVault.sol",
+    extra: ["IERC20.sol"],
+    address: "0xB36e1eDF743352D67E8B24C0A8BD8fc2c229EB4e",
+    constructorArgs: ""
+  },
+  {
+    name: "BrokexCore",
+    file: "BrokexCore.sol",
+    extra: ["IERC20.sol"],
+    address: "0x252487bE9867eF47A194402d178Ee8E555466dd9",
+    constructorArgs: "000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54bda029130000000000000000000000002fa6dbfe4291136cf272e1a3294362b6651e8517000000000000000000000000b36e1edf743352d67e8b24c0a8bd8fc2c229eb4e"
+  },
+  {
     name: "BrokexLens",
     file: "BrokexLens.sol",
     extra: ["IERC20.sol"],
-    address: "0xb6b9bc3f0bD23F645a2ce7E0726a62B25c1Ca99f",
-    constructorArgs: "00000000000000000000000021e2e9d66b04c5be9fa825572fae3f63413b88e5"
+    address: "0x631C66fE969Ca48840b7CF85CE0f06aF93EFf3ff",
+    constructorArgs: "000000000000000000000000252487be9867ef47a194402d178ee8e555466dd9"
   }
 ];
 

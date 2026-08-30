@@ -2,63 +2,33 @@
   "network": "Base Mainnet",
   "chainId": 8453,
   "deployer": "0x22249D0e6c013aa6d7E183b56e9f31835c763Ce6",
-  "deployedAt": "2026-08-29T14:41:18Z",
+  "deployedAt": "2026-08-30T00:16:42Z",
   "contracts": {
     "BrokexVault": {
-      "address": "0x61Ea14e5F3Da22BCaAD4b7F57a23926699a174B7",
-      "blockNumber": 50612553,
-      "transactionHash": "0xf065110510a1fb7189ccba0b779c10d3562bb639e94b132f4cac4d74a4045c68",
-      "explorerUrl": "https://basescan.org/address/0x61Ea14e5F3Da22BCaAD4b7F57a23926699a174B7"
+      "address": "0xB36e1eDF743352D67E8B24C0A8BD8fc2c229EB4e",
+      "verified": true,
+      "basescan": "https://basescan.org/address/0xB36e1eDF743352D67E8B24C0A8BD8fc2c229EB4e#code"
     },
     "BrokexCore": {
-      "address": "0x21e2e9D66b04C5Be9fA825572fAE3F63413B88E5",
-      "blockNumber": 50612557,
-      "transactionHash": "0xf56413f187bcf94cd031d02a1699ad30b2e7ebd50acd6c75edf13aa7413be06a",
-      "explorerUrl": "https://basescan.org/address/0x21e2e9D66b04C5Be9fA825572fAE3F63413B88E5"
+      "address": "0x252487bE9867eF47A194402d178Ee8E555466dd9",
+      "verified": true,
+      "basescan": "https://basescan.org/address/0x252487bE9867eF47A194402d178Ee8E555466dd9#code"
     },
     "BrokexLens": {
-      "address": "0xb6b9bc3f0bD23F645a2ce7E0726a62B25c1Ca99f",
-      "blockNumber": 50612566,
-      "transactionHash": "0x09efc47544ab882cba1af4f3e6fa1b2734dd644209c54d9122d23751fa7017d0",
-      "explorerUrl": "https://basescan.org/address/0xb6b9bc3f0bD23F645a2ce7E0726a62B25c1Ca99f"
+      "address": "0x631C66fE969Ca48840b7CF85CE0f06aF93EFf3ff",
+      "verified": true,
+      "basescan": "https://basescan.org/address/0x631C66fE969Ca48840b7CF85CE0f06aF93EFf3ff#code"
     }
   },
-  "externalAddresses": {
-    "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    "SupraOraclePull": "0x2FA6DbFe4291136Cf272E1A3294362b6651e8517"
+  "external": {
+    "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "supraRouter": "0x2FA6DbFe4291136Cf272E1A3294362b6651e8517",
+    "chainlinkGoldFeed": "0x5213eBB69743b85644dbB6E25cdF994aFBb8cF31"
   },
-  "initializationTransactions": {
-    "setPrimaryCore": {
-      "description": "Linked BrokexVault to BrokexCore",
-      "blockNumber": 50612560,
-      "transactionHash": "0x372839e43fbea63b3851e24b9fb96d66e82627964fa614e5ce41759bd9965536"
-    },
-    "listAssetGold": {
-      "description": "Listed Gold XAU/USD (Asset ID: 5500)",
-      "assetId": 5500,
-      "blockNumber": 50612563,
-      "transactionHash": "0x26eb1dfa2f555cb856c97c1c15b963935ed245a0e6fe13c53894326c441d9f51",
-      "assetConfig": {
-        "minLeverage": 5,
-        "maxLeverage": 20,
-        "minTradeSize": "10000000",
-        "commissionRate": 1000,
-        "maxTraderOI": "2500000000",
-        "maxOpenInterest": "50000000000",
-        "maxSkew": "5000000000",
-        "minSpread": 300,
-        "maxSpread": 1500,
-        "spreadVirtualOI": "10000000000",
-        "maxSpreadPenalty": 1200,
-        "maxSpreadDiscount": 100,
-        "baseBorrowRateHourly": 23,
-        "maxBorrowRateHourly": 114,
-        "borrowVirtualOI": "10000000000",
-        "recoveryTimeDays": 20,
-        "maxProfitRate": 80000,
-        "lockedCapitalRate": 120000,
-        "liquidationThreshold": 950000
-      }
-    }
+  "market5500": {
+    "assetId": 5500,
+    "name": "Gold / USD (XAU/USD)",
+    "chainlinkMaxDeviation": 7500,
+    "chainlinkMaxDeviationPercent": "0.75%"
   }
 }

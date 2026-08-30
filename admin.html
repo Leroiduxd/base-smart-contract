@@ -795,11 +795,14 @@
       </div>
 
       <div style="display: flex; gap: 8px;">
-        <button class="btn btn-secondary btn-sm" id="btn-save-cfg">
-          <i data-lucide="save" style="width: 14px; height: 14px;"></i> Sauvegarder
+        <button class="btn btn-primary btn-sm" id="btn-load-mainnet" title="Charger les contrats déployés sur Base Mainnet">
+          🔵 Base Mainnet
         </button>
         <button class="btn btn-secondary btn-sm" id="btn-load-testnet" title="Pré-remplir avec les adresses testnet">
           Sepolia
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-save-cfg">
+          <i data-lucide="save" style="width: 14px; height: 14px;"></i> Sauvegarder
         </button>
       </div>
     </div>
@@ -1488,6 +1491,13 @@
     // Default Addresses (Empty / Loaded from LocalStorage)
     const STORAGE_KEY = "brokex_admin_contracts_v1";
 
+    const MAINNET_ADDRS = {
+      core: "0x252487bE9867eF47A194402d178Ee8E555466dd9",
+      vault: "0xB36e1eDF743352D67E8B24C0A8BD8fc2c229EB4e",
+      lens: "0x631C66fE969Ca48840b7CF85CE0f06aF93EFf3ff",
+      usdc: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    };
+
     function showToast(message, type = "info") {
       const container = document.getElementById("toast-container");
       const toast = document.createElement("div");
@@ -1532,12 +1542,17 @@
       if (saved) {
         try {
           const data = JSON.parse(saved);
-          document.getElementById("cfg-core").value = data.core || "";
-          document.getElementById("cfg-vault").value = data.vault || "";
-          document.getElementById("cfg-lens").value = data.lens || "";
-          document.getElementById("cfg-usdc").value = data.usdc || "";
+          document.getElementById("cfg-core").value = data.core || MAINNET_ADDRS.core;
+          document.getElementById("cfg-vault").value = data.vault || MAINNET_ADDRS.vault;
+          document.getElementById("cfg-lens").value = data.lens || MAINNET_ADDRS.lens;
+          document.getElementById("cfg-usdc").value = data.usdc || MAINNET_ADDRS.usdc;
+          return;
         } catch (e) {}
       }
+      document.getElementById("cfg-core").value = MAINNET_ADDRS.core;
+      document.getElementById("cfg-vault").value = MAINNET_ADDRS.vault;
+      document.getElementById("cfg-lens").value = MAINNET_ADDRS.lens;
+      document.getElementById("cfg-usdc").value = MAINNET_ADDRS.usdc;
     }
 
     function saveAddresses() {
@@ -1552,6 +1567,16 @@
       initContracts();
     }
 
+    // Preset Addresses for Mainnet
+    document.getElementById("btn-load-mainnet").addEventListener("click", () => {
+      document.getElementById("cfg-core").value = MAINNET_ADDRS.core;
+      document.getElementById("cfg-vault").value = MAINNET_ADDRS.vault;
+      document.getElementById("cfg-lens").value = MAINNET_ADDRS.lens;
+      document.getElementById("cfg-usdc").value = MAINNET_ADDRS.usdc;
+      saveAddresses();
+      showToast("Adresses Base Mainnet chargées !", "success");
+    });
+
     // Preset Addresses for Sepolia
     document.getElementById("btn-load-testnet").addEventListener("click", () => {
       document.getElementById("cfg-core").value = "0x171386dEaBFdd281c29345F12996bA35f1Aed0d2";
@@ -1559,6 +1584,7 @@
       document.getElementById("cfg-lens").value = "0x9CE55cAbB24f01849B5ac00cB86C2C8CAE9EDF20";
       document.getElementById("cfg-usdc").value = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
       saveAddresses();
+      showToast("Adresses Base Sepolia chargées !", "info");
     });
 
     document.getElementById("btn-save-cfg").addEventListener("click", saveAddresses);
