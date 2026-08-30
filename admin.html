@@ -1,0 +1,2204 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brokex Protocol | Admin Control Center</title>
+  
+  <!-- Google Fonts: Inter, Outfit, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+    
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Ethers v6 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg-black: #08080a;
+      --bg-surface: #101014;
+      --bg-surface-elevated: #16161c;
+      --bg-surface-hover: #1c1c24;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(255, 255, 255, 0.25);
+      --border-active: #ffffff;
+      
+      --text-pure: #ffffff;
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --text-tertiary: #71717a;
+      
+      --badge-green-bg: rgba(34, 197, 94, 0.12);
+      --badge-green-text: #4ade80;
+      --badge-green-border: rgba(34, 197, 94, 0.3);
+      
+      --badge-red-bg: rgba(239, 68, 68, 0.12);
+      --badge-red-text: #f87171;
+      --badge-red-border: rgba(239, 68, 68, 0.3);
+
+      --badge-amber-bg: rgba(245, 158, 11, 0.12);
+      --badge-amber-text: #fbbf24;
+      --badge-amber-border: rgba(245, 158, 11, 0.3);
+      
+      --font-sans: 'Inter', -apple-system, sans-serif;
+      --font-display: 'Outfit', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-black);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+        linear-gradient(180deg, #09090c 0%, #050507 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 0 0 60px 0;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-black); }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    /* Top Navigation Bar */
+    header {
+      background: rgba(12, 12, 16, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 16px 32px;
+    }
+
+    .nav-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: #ffffff;
+      color: #000000;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 18px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-pure);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      background: #27272a;
+      color: #e4e4e7;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .network-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .network-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #71717a;
+    }
+    .network-dot.active { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: #ffffff;
+      color: #000000;
+      border-color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #e4e4e7;
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-focus);
+      color: var(--text-pure);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #f87171;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1440px;
+      margin: 28px auto 0 auto;
+      padding: 0 32px;
+    }
+
+    /* Contract Config Bar */
+    .config-strip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .config-strip-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .config-inputs-grid {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-grow: 1;
+      flex-wrap: wrap;
+    }
+
+    .config-input-group {
+      display: flex;
+      align-items: center;
+      background: var(--bg-black);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      gap: 6px;
+    }
+
+    .config-input-group label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+
+    .config-input-group input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      outline: none;
+      width: 170px;
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-surface);
+    }
+
+    .tab-btn.active {
+      color: #000000;
+      background: #ffffff;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Tab Content Section */
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .tab-pane.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Metrics Cards Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .metric-card:hover {
+      border-color: var(--border-focus);
+    }
+
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .metric-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .metric-icon {
+      color: var(--text-tertiary);
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 700;
+      font-family: var(--font-display);
+      color: var(--text-pure);
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .metric-subtext {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Section Cards */
+    .section-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-pure);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Assets Table */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table.admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    table.admin-table th {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    table.admin-table td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+
+    table.admin-table tbody tr {
+      transition: background 0.15s ease;
+    }
+    table.admin-table tbody tr:hover {
+      background: var(--bg-surface-elevated);
+    }
+
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-open {
+      background: var(--badge-green-bg);
+      color: var(--badge-green-text);
+      border: 1px solid var(--badge-green-border);
+    }
+
+    .badge-closed {
+      background: var(--badge-red-bg);
+      color: var(--badge-red-text);
+      border: 1px solid var(--badge-red-border);
+    }
+
+    .badge-warning {
+      background: var(--badge-amber-bg);
+      color: var(--badge-amber-text);
+      border: 1px solid var(--badge-amber-border);
+    }
+
+    .badge-neutral {
+      background: #27272a;
+      color: #d4d4d8;
+      border: 1px solid #3f3f46;
+    }
+
+    /* Skew Visual Bar */
+    .skew-bar-wrapper {
+      width: 140px;
+    }
+    .skew-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+      font-family: var(--font-mono);
+    }
+    .skew-bar-track {
+      height: 6px;
+      background: #27272a;
+      border-radius: 3px;
+      display: flex;
+      overflow: hidden;
+    }
+    .skew-bar-long {
+      background: #ffffff;
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    .skew-bar-short {
+      background: #71717a;
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    /* Forms & Inputs */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group label span.unit {
+      color: var(--text-tertiary);
+      font-size: 11px;
+      font-weight: 400;
+      font-family: var(--font-mono);
+    }
+
+    .form-control {
+      background: var(--bg-black);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      color: var(--text-pure);
+      font-size: 14px;
+      font-family: var(--font-mono);
+      outline: none;
+      transition: border-color 0.15s ease;
+      width: 100%;
+    }
+    .form-control:focus {
+      border-color: var(--border-active);
+      box-shadow: 0 0 0 1px #ffffff;
+    }
+
+    .form-help {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+    }
+
+    /* Presets Strip */
+    .presets-box {
+      background: var(--bg-surface-elevated);
+      border: 1px dashed var(--border-focus);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .presets-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-pure);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .presets-btns {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Modal Dialog */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-focus);
+      border-radius: var(--radius-xl);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      transform: scale(0.96);
+      transition: transform 0.2s ease;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+    }
+    .modal-backdrop.open .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-pure);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: var(--radius-sm);
+    }
+    .modal-close:hover { color: #fff; background: var(--bg-surface-hover); }
+
+    /* Toast Notification */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: #18181b;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 320px;
+      animation: slideIn 0.3s ease;
+    }
+
+    .toast.success { border-left: 4px solid #22c55e; }
+    .toast.error { border-left: 4px solid #ef4444; }
+    .toast.info { border-left: 4px solid #ffffff; }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Monospace Text helper */
+    .mono { font-family: var(--font-mono); }
+    .dim { color: var(--text-tertiary); }
+    .white { color: var(--text-pure); }
+
+    /* Action bar */
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top Header Bar -->
+  <header>
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-logo">B</div>
+        <div class="brand-text">
+          <h1>BROKEX CONTROL CENTER <span class="brand-tag">Admin</span></h1>
+          <p>Supervision & Paramétrage du Protocole Décentralisé</p>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <div class="network-badge">
+          <div class="network-dot" id="network-indicator"></div>
+          <span id="network-name">Non Connecté</span>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" id="btn-refresh" title="Actualiser les données on-chain">
+          <i data-lucide="rotate-cw" style="width: 14px; height: 14px;"></i> Actualiser
+        </button>
+
+        <button class="btn btn-primary btn-sm" id="btn-connect">
+          <i data-lucide="wallet" style="width: 14px; height: 14px;"></i> Connecter MetaMask
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Contract Addresses Configuration Bar -->
+    <div class="config-strip">
+      <div class="config-strip-title">
+        <i data-lucide="sliders" style="width: 16px; height: 16px;"></i> Contrats Cibles :
+      </div>
+
+      <div class="config-inputs-grid">
+        <div class="config-input-group">
+          <label>CORE</label>
+          <input type="text" id="cfg-core" placeholder="0x..." spellcheck="false">
+        </div>
+        <div class="config-input-group">
+          <label>VAULT</label>
+          <input type="text" id="cfg-vault" placeholder="0x..." spellcheck="false">
+        </div>
+        <div class="config-input-group">
+          <label>LENS</label>
+          <input type="text" id="cfg-lens" placeholder="0x..." spellcheck="false">
+        </div>
+        <div class="config-input-group">
+          <label>USDC</label>
+          <input type="text" id="cfg-usdc" placeholder="0x..." spellcheck="false">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary btn-sm" id="btn-save-cfg">
+          <i data-lucide="save" style="width: 14px; height: 14px;"></i> Sauvegarder
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-load-testnet" title="Pré-remplir avec les adresses testnet">
+          Sepolia
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Tabs Navigation -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-overview">
+        <i data-lucide="activity" style="width: 16px; height: 16px;"></i> Vue d'ensemble
+      </button>
+      <button class="tab-btn" data-tab="tab-markets">
+        <i data-lucide="layers" style="width: 16px; height: 16px;"></i> Gestion des Marchés
+      </button>
+      <button class="tab-btn" data-tab="tab-new-asset">
+        <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Lister un Actif
+      </button>
+      <button class="tab-btn" data-tab="tab-vault">
+        <i data-lucide="vault" style="width: 16px; height: 16px;"></i> Vault & Trésorerie
+      </button>
+      <button class="tab-btn" data-tab="tab-governance">
+        <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i> Gouvernance & Urgence
+      </button>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: OVERVIEW -->
+    <!-- ========================================================================= -->
+    <div class="tab-pane active" id="tab-overview">
+
+      <!-- Metrics Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Solde Total Vault (TVL)</span>
+            <i data-lucide="landmark" class="metric-icon" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div class="metric-value" id="stat-vault-balance">0.00 USDC</div>
+          <div class="metric-subtext">Liquidité disponible pour les trades</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Capital Verrouillé (Locked)</span>
+            <i data-lucide="lock" class="metric-icon" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div class="metric-value" id="stat-locked-capital">0.00 USDC</div>
+          <div class="metric-subtext" id="stat-free-capital">Capital libre: 0.00 USDC</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Statut de Sécurité Global</span>
+            <i data-lucide="shield" class="metric-icon" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div class="metric-value" id="stat-security-mode">NORMAL</div>
+          <div class="metric-subtext" id="stat-security-sub">Opérations 100% actives</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Marchés Listés</span>
+            <i data-lucide="bar-chart-2" class="metric-icon" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div class="metric-value" id="stat-active-markets">0</div>
+          <div class="metric-subtext" id="stat-total-trades">0 trades historiques</div>
+        </div>
+      </div>
+
+      <!-- Quick Action Protocol Summary -->
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">
+              <i data-lucide="info" style="width: 20px; height: 20px;"></i> État Global du Protocole
+            </div>
+            <div class="section-desc">Vérification de la liaison on-chain et des propriétaires actuels</div>
+          </div>
+          <div id="admin-badge-container">
+            <span class="badge badge-neutral" id="badge-admin-status">Vérification Admin...</span>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Propriétaire Actuel (Owner)</label>
+            <div class="form-control mono dim" id="disp-owner">-</div>
+          </div>
+          <div class="form-group">
+            <label>Propriétaire en Attente (Pending)</label>
+            <div class="form-control mono dim" id="disp-pending-owner">-</div>
+          </div>
+          <div class="form-group">
+            <label>Oracle Supra DORA Configuré</label>
+            <div class="form-control mono dim" id="disp-supra-addr">-</div>
+          </div>
+          <div class="form-group">
+            <label>Taux de Parrainage (Referral Rate)</label>
+            <div class="form-control mono dim" id="disp-referral-rate">20%</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: MARKETS MANAGEMENT -->
+    <!-- ========================================================================= -->
+    <div class="tab-pane" id="tab-markets">
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">
+              <i data-lucide="list" style="width: 20px; height: 20px;"></i> Liste des Marchés Actifs
+            </div>
+            <div class="section-desc">Gérez l'ouverture, le garde-fou Chainlink et les paramètres de chaque marché</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-go-new-asset">
+            <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Ajouter un Nouveau Marché
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Marché</th>
+                <th>Statut Session</th>
+                <th>Levier</th>
+                <th>Open Interest (Long / Short)</th>
+                <th>Spreads Actuels</th>
+                <th>Taux Borrow / H</th>
+                <th>Garde-Fou Chainlink</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="markets-table-body">
+              <tr>
+                <td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 32px;">
+                  Connectez votre wallet et renseignez les adresses pour charger les marchés.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: LIST NEW ASSET -->
+    <!-- ========================================================================= -->
+    <div class="tab-pane" id="tab-new-asset">
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">
+              <i data-lucide="file-plus" style="width: 20px; height: 20px;"></i> Configuration et Listing d'un Actif
+            </div>
+            <div class="section-desc">Définissez les paramètres de risque, spreads, emprunts et leviers pour un nouveau marché</div>
+          </div>
+        </div>
+
+        <!-- Presets Buttons -->
+        <div class="presets-box">
+          <div class="presets-title">
+            <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> Modèles Pré-configurés (1-Clic) :
+          </div>
+          <div class="presets-btns">
+            <button class="btn btn-secondary btn-sm" id="btn-preset-gold">
+              🥇 Or (XAU/USD - 5500)
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-preset-crypto">
+              ⚡ Crypto Majeure (BTC/ETH)
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-preset-forex">
+              💶 Forex (EUR/USD)
+            </button>
+          </div>
+        </div>
+
+        <form id="form-list-asset">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Asset ID (Supra Pair ID) <span class="unit">uint256</span></label>
+              <input type="number" class="form-control" id="f-assetId" placeholder="ex: 5500" required>
+              <span class="form-help">Identifiant officiel du flux de prix Supra DORA</span>
+            </div>
+
+            <div class="form-group">
+              <label>Levier Min / Max <span class="unit">x (entiers)</span></label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" class="form-control" id="f-minLev" placeholder="Min (ex: 5)" required>
+                <input type="number" class="form-control" id="f-maxLev" placeholder="Max (ex: 20)" required>
+              </div>
+              <span class="form-help">Plage de levier autorisée pour les traders</span>
+            </div>
+
+            <div class="form-group">
+              <label>Collatéral Minimum <span class="unit">USDC</span></label>
+              <input type="number" step="any" class="form-control" id="f-minTradeSize" placeholder="ex: 10" required>
+              <span class="form-help">Taille de position minimum par trade</span>
+            </div>
+
+            <div class="form-group">
+              <label>Commission d'Ouverture <span class="unit">%</span></label>
+              <input type="number" step="any" class="form-control" id="f-commission" placeholder="ex: 0.10" required>
+              <span class="form-help">Frais prélevés sur le volume notionnel</span>
+            </div>
+
+            <div class="form-group">
+              <label>Capacité Max par Trader <span class="unit">USDC</span></label>
+              <input type="number" step="any" class="form-control" id="f-maxTraderOI" placeholder="ex: 2500" required>
+              <span class="form-help">Open interest maximum autorisé pour un seul trader</span>
+            </div>
+
+            <div class="form-group">
+              <label>Capacité Totale Marché (Max OI) <span class="unit">USDC</span></label>
+              <input type="number" step="any" class="form-control" id="f-maxOpenInterest" placeholder="ex: 50000" required>
+              <span class="form-help">Open interest global maximum pour ce marché</span>
+            </div>
+
+            <div class="form-group">
+              <label>Déséquilibre Max Autorisé (Max Skew) <span class="unit">USDC</span></label>
+              <input type="number" step="any" class="form-control" id="f-maxSkew" placeholder="ex: 5000" required>
+              <span class="form-help">Écart maximum toléré entre les Longs et les Shorts</span>
+            </div>
+
+            <div class="form-group">
+              <label>Spreads Min / Max <span class="unit">%</span></label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" step="any" class="form-control" id="f-minSpread" placeholder="Min (ex: 0.03)" required>
+                <input type="number" step="any" class="form-control" id="f-maxSpread" placeholder="Max (ex: 0.15)" required>
+              </div>
+              <span class="form-help">Plage de spread dynamique à l'ouverture</span>
+            </div>
+
+            <div class="form-group">
+              <label>Profondeur Virtuelle Spread (Buffer) <span class="unit">USDC</span></label>
+              <input type="number" step="any" class="form-control" id="f-spreadVirtualOI" placeholder="ex: 10000" required>
+              <span class="form-help">Inertie pour lisser la montée du spread</span>
+            </div>
+
+            <div class="form-group">
+              <label>Pénalité / Réduction Max Spread <span class="unit">%</span></label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" step="any" class="form-control" id="f-maxSpreadPenalty" placeholder="Malus (ex: 0.12)" required>
+                <input type="number" step="any" class="form-control" id="f-maxSpreadDiscount" placeholder="Bonus (ex: 0.01)" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Taux Emprunt Horaire Base / Max <span class="unit">% / heure</span></label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" step="any" class="form-control" id="f-baseBorrow" placeholder="Base (ex: 0.0023)" required>
+                <input type="number" step="any" class="form-control" id="f-maxBorrow" placeholder="Max (ex: 0.0114)" required>
+              </div>
+              <span class="form-help">Taux d'emprunt payé par le côté dominant</span>
+            </div>
+
+            <div class="form-group">
+              <label>Lissage Borrow (borrowVirtualOI) <span class="unit">USDC</span></label>
+              <input type="number" step="any" class="form-control" id="f-borrowVirtualOI" placeholder="ex: 10000" required>
+            </div>
+
+            <div class="form-group">
+              <label>Temps d'Amortissement Risque <span class="unit">Jours</span></label>
+              <input type="number" class="form-control" id="f-recoveryDays" placeholder="ex: 20" required>
+              <span class="form-help">Période cible de rééquilibrage du risque Vault</span>
+            </div>
+
+            <div class="form-group">
+              <label>Plafond de Profit (Max Profit) <span class="unit">%</span></label>
+              <input type="number" step="any" class="form-control" id="f-maxProfitRate" placeholder="ex: 8.0" required>
+              <span class="form-help">Gain maximum possible par position (ex: 8% du notionnel)</span>
+            </div>
+
+            <div class="form-group">
+              <label>Capital Verrouillé Vault <span class="unit">%</span></label>
+              <input type="number" step="any" class="form-control" id="f-lockedCapitalRate" placeholder="ex: 12.0" required>
+              <span class="form-help">Réserve réservée dans la Vault (doit être > Max Profit)</span>
+            </div>
+
+            <div class="form-group">
+              <label>Seuil de Liquidation <span class="unit">%</span></label>
+              <input type="number" step="any" class="form-control" id="f-liquidationThreshold" placeholder="ex: 95.0" required>
+              <span class="form-help">Pourcentage de perte du collatéral déclenchant la liquidation</span>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="button" class="btn btn-secondary" id="btn-reset-form">Réinitialiser</button>
+            <button type="submit" class="btn btn-primary" id="btn-submit-list">
+              <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Lister le Marché sur BrokexCore
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: VAULT & LP -->
+    <!-- ========================================================================= -->
+    <div class="tab-pane" id="tab-vault">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Solde USDC de votre Wallet</span>
+            <i data-lucide="wallet" class="metric-icon" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div class="metric-value" id="vault-wallet-balance">0.00 USDC</div>
+          <div class="metric-subtext">Disponible pour dépôt LP</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Solde Total Vault (TVL)</span>
+            <i data-lucide="database" class="metric-icon" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div class="metric-value" id="vault-total-balance">0.00 USDC</div>
+          <div class="metric-subtext">USDC détenus par BrokexVault</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Capital Libre (Retirable)</span>
+            <i data-lucide="unlock" class="metric-icon" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div class="metric-value" id="vault-free-balance">0.00 USDC</div>
+          <div class="metric-subtext">Solde - Capital Verrouillé</div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <!-- Deposit Box -->
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">
+                <i data-lucide="arrow-down-circle" style="width: 20px; height: 20px;"></i> Dépôt de Liquidité (LP)
+              </div>
+              <div class="section-desc">Fournissez de la liquidité USDC dans la Vault pour financer les trades</div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Montant du Dépôt <span class="unit">USDC</span></label>
+            <input type="number" step="any" class="form-control" id="v-deposit-amount" placeholder="ex: 1000">
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" id="btn-approve-usdc" style="flex: 1;">
+              1. Approuver USDC
+            </button>
+            <button class="btn btn-primary" id="btn-deposit-vault" style="flex: 1;">
+              2. Déposer dans Vault
+            </button>
+          </div>
+        </div>
+
+        <!-- Withdraw Box -->
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">
+                <i data-lucide="arrow-up-circle" style="width: 20px; height: 20px;"></i> Retrait de Liquidité
+              </div>
+              <div class="section-desc">Retirez vos USDC disponibles (ne peut pas dépasser le capital libre)</div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Montant du Retrait <span class="unit">USDC</span></label>
+            <input type="number" step="any" class="form-control" id="v-withdraw-amount" placeholder="ex: 500">
+          </div>
+
+          <button class="btn btn-secondary" id="btn-withdraw-vault" style="width: 100%;">
+            Retirer de la Vault
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: GOVERNANCE & EMERGENCY -->
+    <!-- ========================================================================= -->
+    <div class="tab-pane" id="tab-governance">
+      <div class="form-grid">
+        <!-- Security Mode Control -->
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">
+                <i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i> Mode de Sécurité Global
+              </div>
+              <div class="section-desc">Basculez le protocole en mode d'urgence si nécessaire</div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Sélectionner le mode</label>
+            <select class="form-control" id="g-security-mode">
+              <option value="0">MODE NORMAL (0) - Trading 100% Actif</option>
+              <option value="1">CLOSE ONLY (1) - Fermetures uniquement</option>
+              <option value="2">PAUSED (2) - Pause complète des opérations</option>
+              <option value="3">RECOVERY (3) - Mode récupération d'urgence</option>
+            </select>
+          </div>
+
+          <button class="btn btn-secondary" id="btn-set-sec-mode" style="width: 100%;">
+            Mettre à jour le Mode de Sécurité
+          </button>
+        </div>
+
+        <!-- Transfer Ownership -->
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">
+                <i data-lucide="key" style="width: 20px; height: 20px;"></i> Transfert de Propriété (Owner)
+              </div>
+              <div class="section-desc">Transférez les droits d'administration à une nouvelle adresse ou un Multisig Safe</div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Nouvelle Adresse Owner</label>
+            <input type="text" class="form-control" id="g-new-owner" placeholder="0x...">
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" id="btn-transfer-owner" style="flex: 1;">
+              1. Initier Transfert
+            </button>
+            <button class="btn btn-primary" id="btn-accept-owner" style="flex: 1;">
+              2. Accepter Propriété
+            </button>
+          </div>
+        </div>
+
+        <!-- Referral Rate -->
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">
+                <i data-lucide="users" style="width: 20px; height: 20px;"></i> Programme Parrainage (Referral)
+              </div>
+              <div class="section-desc">Définissez la commission reversée aux apporteurs d'affaires</div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Taux de Commission <span class="unit">% (ex: 20 = 20%)</span></label>
+            <input type="number" step="any" class="form-control" id="g-ref-rate" placeholder="ex: 20">
+          </div>
+
+          <button class="btn btn-secondary" id="btn-set-ref-rate" style="width: 100%;">
+            Mettre à jour le Taux Referral
+          </button>
+        </div>
+
+        <!-- Vault Primary Core Binding -->
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">
+                <i data-lucide="link" style="width: 20px; height: 20px;"></i> Liaison Vault ↔ Core
+              </div>
+              <div class="section-desc">Liez une nouvelle version de BrokexCore à la Vault (Migration V1/V2)</div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Adresse du Nouveau BrokexCore</label>
+            <input type="text" class="form-control" id="g-link-core-addr" placeholder="0x...">
+          </div>
+
+          <button class="btn btn-secondary" id="btn-set-primary-core" style="width: 100%;">
+            Lier le Core à la Vault (setPrimaryCore)
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: EDIT ASSET CONFIG -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="modal-edit-asset">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-edit-title">Modifier la Configuration du Marché</div>
+        <button class="modal-close" data-close-modal="modal-edit-asset">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+
+      <form id="form-edit-asset">
+        <input type="hidden" id="edit-assetId">
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group">
+            <label>Levier Min / Max <span class="unit">x</span></label>
+            <div style="display: flex; gap: 6px;">
+              <input type="number" class="form-control" id="edit-minLev" required>
+              <input type="number" class="form-control" id="edit-maxLev" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Collatéral Min <span class="unit">USDC</span></label>
+            <input type="number" step="any" class="form-control" id="edit-minTradeSize" required>
+          </div>
+          <div class="form-group">
+            <label>Commission <span class="unit">%</span></label>
+            <input type="number" step="any" class="form-control" id="edit-commission" required>
+          </div>
+          <div class="form-group">
+            <label>Max Trader OI <span class="unit">USDC</span></label>
+            <input type="number" step="any" class="form-control" id="edit-maxTraderOI" required>
+          </div>
+          <div class="form-group">
+            <label>Max Market OI <span class="unit">USDC</span></label>
+            <input type="number" step="any" class="form-control" id="edit-maxOpenInterest" required>
+          </div>
+          <div class="form-group">
+            <label>Max Skew <span class="unit">USDC</span></label>
+            <input type="number" step="any" class="form-control" id="edit-maxSkew" required>
+          </div>
+          <div class="form-group">
+            <label>Spreads Min / Max <span class="unit">%</span></label>
+            <div style="display: flex; gap: 6px;">
+              <input type="number" step="any" class="form-control" id="edit-minSpread" required>
+              <input type="number" step="any" class="form-control" id="edit-maxSpread" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Spread Virtual OI <span class="unit">USDC</span></label>
+            <input type="number" step="any" class="form-control" id="edit-spreadVirtualOI" required>
+          </div>
+          <div class="form-group">
+            <label>Borrow Hourly Base / Max <span class="unit">%</span></label>
+            <div style="display: flex; gap: 6px;">
+              <input type="number" step="any" class="form-control" id="edit-baseBorrow" required>
+              <input type="number" step="any" class="form-control" id="edit-maxBorrow" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Borrow Virtual OI <span class="unit">USDC</span></label>
+            <input type="number" step="any" class="form-control" id="edit-borrowVirtualOI" required>
+          </div>
+          <div class="form-group">
+            <label>Recovery Days <span class="unit">Jours</span></label>
+            <input type="number" class="form-control" id="edit-recoveryDays" required>
+          </div>
+          <div class="form-group">
+            <label>Max Profit Rate <span class="unit">%</span></label>
+            <input type="number" step="any" class="form-control" id="edit-maxProfitRate" required>
+          </div>
+          <div class="form-group">
+            <label>Locked Capital Rate <span class="unit">%</span></label>
+            <input type="number" step="any" class="form-control" id="edit-lockedCapitalRate" required>
+          </div>
+          <div class="form-group">
+            <label>Liquidation Threshold <span class="unit">%</span></label>
+            <input type="number" step="any" class="form-control" id="edit-liquidationThreshold" required>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" data-close-modal="modal-edit-asset">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-edit-asset">
+            Enregistrer la Nouvelle Configuration
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: CONFIGURE CHAINLINK GUARD -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="modal-chainlink-guard">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-guard-title">Garde-Fou Chainlink (Sanity Check)</div>
+        <button class="modal-close" data-close-modal="modal-chainlink-guard">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+
+      <form id="form-chainlink-guard">
+        <input type="hidden" id="cl-assetId">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label>Adresse du Feed Proxy Chainlink (Base)</label>
+          <input type="text" class="form-control" id="cl-feed-addr" placeholder="0x... (laisser vide pour désactiver)" spellcheck="false">
+          <span class="form-help">Entrez l'adresse de l'AggregatorProxy Chainlink. Mettre 0x0 pour désactiver le garde-fou.</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Déviation Max Tolérée <span class="unit">% (ex: 0.75, 1.125, 1.5)</span></label>
+          <input type="number" step="any" class="form-control" id="cl-max-deviation" placeholder="ex: 0.75">
+          <span class="form-help">Si l'écart entre Supra et Chainlink dépasse ce pourcentage, la transaction sera rejetée.</span>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-secondary" data-close-modal="modal-chainlink-guard">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-guard">
+            Appliquer le Garde-Fou
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- ABIs ---
+    const CORE_ABI = [
+      "function owner() view returns (address)",
+      "function pendingOwner() view returns (address)",
+      "function securityMode() view returns (uint8)",
+      "function getActiveAssets() view returns (uint256[])",
+      "function getAssetCount() view returns (uint256)",
+      "function assetConfigs(uint256) view returns (tuple(uint8 minLeverage, uint8 maxLeverage, uint64 minTradeSize, uint24 commissionRate, uint64 maxTraderOI, uint128 maxOpenInterest, uint128 maxSkew, uint24 minSpread, uint24 maxSpread, uint128 spreadVirtualOI, uint24 maxSpreadPenalty, uint24 maxSpreadDiscount, uint24 baseBorrowRateHourly, uint24 maxBorrowRateHourly, uint128 borrowVirtualOI, uint16 recoveryTimeDays, uint24 maxProfitRate, uint24 lockedCapitalRate, uint24 liquidationThreshold))",
+      "function assetStates(uint256) view returns (tuple(bool listed, uint8 securityMode, uint256 openInterestLong, uint256 openInterestShort, uint256 longBorrowIndex, uint256 shortBorrowIndex, uint256 lastBorrowUpdate))",
+      "function chainlinkGuards(uint256) view returns (tuple(address feed, uint32 maxDeviation))",
+      "function marketClosed(uint256) view returns (bool)",
+      "function referralRewardRate() view returns (uint256)",
+      "function supra() view returns (address)",
+      "function vault() view returns (address)",
+      "function USDC() view returns (address)",
+      "function lockedCapital() view returns (uint256)",
+      "function assetLockedCapital(uint256) view returns (uint256)",
+      "function nextTradeId() view returns (uint256)",
+      "function currentBorrowRates(uint256) view returns (uint256 longRate, uint256 shortRate)",
+      "function currentSpreads(uint256) view returns (uint256 longSpread, uint256 shortSpread)",
+      "function dynamicMaxOI(uint256) view returns (uint256 maxOILong, uint256 maxOIShort)",
+      "function setSecurityMode(uint8 newMode)",
+      "function setMarketClosed(uint256 assetId, bool closed)",
+      "function setChainlinkGuard(uint256 assetId, address feed, uint32 maxDeviation)",
+      "function listAsset(uint256 assetId, tuple(uint8 minLeverage, uint8 maxLeverage, uint64 minTradeSize, uint24 commissionRate, uint64 maxTraderOI, uint128 maxOpenInterest, uint128 maxSkew, uint24 minSpread, uint24 maxSpread, uint128 spreadVirtualOI, uint24 maxSpreadPenalty, uint24 maxSpreadDiscount, uint24 baseBorrowRateHourly, uint24 maxBorrowRateHourly, uint128 borrowVirtualOI, uint16 recoveryTimeDays, uint24 maxProfitRate, uint24 lockedCapitalRate, uint24 liquidationThreshold) config)",
+      "function updateAssetConfig(uint256 assetId, tuple(uint8 minLeverage, uint8 maxLeverage, uint64 minTradeSize, uint24 commissionRate, uint64 maxTraderOI, uint128 maxOpenInterest, uint128 maxSkew, uint24 minSpread, uint24 maxSpread, uint128 spreadVirtualOI, uint24 maxSpreadPenalty, uint24 maxSpreadDiscount, uint24 baseBorrowRateHourly, uint24 maxBorrowRateHourly, uint128 borrowVirtualOI, uint16 recoveryTimeDays, uint24 maxProfitRate, uint24 lockedCapitalRate, uint24 liquidationThreshold) config)",
+      "function setAssetSecurityMode(uint256 assetId, uint8 newMode)",
+      "function delistAsset(uint256 assetId)",
+      "function setReferralRewardRate(uint256 newRate)",
+      "function transferOwnership(address newOwner)",
+      "function acceptOwnership()"
+    ];
+
+    const VAULT_ABI = [
+      "function owner() view returns (address)",
+      "function primaryCore() view returns (address)",
+      "function setPrimaryCore(address core)",
+      "function deposit(uint256 amount)",
+      "function withdraw(uint256 amount)"
+    ];
+
+    const ERC20_ABI = [
+      "function balanceOf(address) view returns (uint256)",
+      "function allowance(address owner, address spender) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)",
+      "function decimals() view returns (uint8)"
+    ];
+
+    const LENS_ABI = [
+      "function getProtocolInfo() view returns (tuple(address owner, address pendingOwner, address usdc, address supra, address vault, uint256 lockedCapital, uint256 vaultBalance, uint256 latestTradeId, uint8 securityMode, uint256[] activeAssets))",
+      "function getAssetInfo(uint256) view returns (tuple(uint256 assetId, string name, string symbol, bool listed, uint8 assetSecurityMode, uint256 currentPrice, uint256 minLeverage, uint256 maxLeverage, uint256 minTradeSize, uint256 commissionRate, uint256 maxTraderOI, uint256 maxOpenInterest, uint256 maxSkew, uint256 dynamicMaxOILong, uint256 dynamicMaxOIShort, uint256 minSpread, uint256 maxSpread, uint256 spreadVirtualOI, uint256 maxSpreadPenalty, uint256 maxSpreadDiscount, uint256 currentSpreadLong, uint256 currentSpreadShort, uint256 baseBorrowRateHourly, uint256 maxBorrowRateHourly, uint256 borrowVirtualOI, uint256 currentBorrowRateHourlyLong, uint256 currentBorrowRateHourlyShort, uint256 maxProfitRate, uint256 recoveryTimeDays, uint256 openInterestLong, uint256 openInterestShort, uint256 assetLockedCapital, uint256 longBorrowIndex, uint256 shortBorrowIndex, uint256 currentLongBorrowIndex, uint256 currentShortBorrowIndex, uint256 lastBorrowUpdate))"
+    ];
+
+    // State Variables
+    let provider = null;
+    let signer = null;
+    let userAddress = null;
+    let currentNetwork = null;
+    let coreContract = null;
+    let vaultContract = null;
+    let usdcContract = null;
+    let lensContract = null;
+    let protocolOwner = null;
+
+    const PRECISION = 1000000n; // 1e6
+
+    // Default Addresses (Empty / Loaded from LocalStorage)
+    const STORAGE_KEY = "brokex_admin_contracts_v1";
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      
+      let icon = "info";
+      if (type === "success") icon = "check-circle";
+      if (type === "error") icon = "alert-circle";
+
+      toast.innerHTML = `<i data-lucide="${icon}" style="width: 18px; height: 18px;"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(100%)";
+        toast.style.transition = "all 0.3s ease";
+        setTimeout(() => toast.remove(), 300);
+      }, 4500);
+    }
+
+    function formatUSDC(val) {
+      if (val === null || val === undefined) return "0.00";
+      const num = Number(val) / 1e6;
+      return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatPercent(val, decimals = 2) {
+      if (val === null || val === undefined) return "0.00";
+      const num = (Number(val) / 1e6) * 100;
+      return num.toFixed(decimals) + " %";
+    }
+
+    function shortAddr(addr) {
+      if (!addr || addr === ethers.ZeroAddress) return "0x0000...0000";
+      return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+    }
+
+    // Load & Save Contracts from UI
+    function loadSavedAddresses() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          document.getElementById("cfg-core").value = data.core || "";
+          document.getElementById("cfg-vault").value = data.vault || "";
+          document.getElementById("cfg-lens").value = data.lens || "";
+          document.getElementById("cfg-usdc").value = data.usdc || "";
+        } catch (e) {}
+      }
+    }
+
+    function saveAddresses() {
+      const data = {
+        core: document.getElementById("cfg-core").value.trim(),
+        vault: document.getElementById("cfg-vault").value.trim(),
+        lens: document.getElementById("cfg-lens").value.trim(),
+        usdc: document.getElementById("cfg-usdc").value.trim()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      showToast("Adresses de contrats sauvegardées localement !", "success");
+      initContracts();
+    }
+
+    // Preset Addresses for Sepolia
+    document.getElementById("btn-load-testnet").addEventListener("click", () => {
+      document.getElementById("cfg-core").value = "0x171386dEaBFdd281c29345F12996bA35f1Aed0d2";
+      document.getElementById("cfg-vault").value = "0xa35af336059Db7659b5f1565d9F9309323961067";
+      document.getElementById("cfg-lens").value = "0x9CE55cAbB24f01849B5ac00cB86C2C8CAE9EDF20";
+      document.getElementById("cfg-usdc").value = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+      saveAddresses();
+    });
+
+    document.getElementById("btn-save-cfg").addEventListener("click", saveAddresses);
+
+    // Initialize Contracts instances
+    function initContracts() {
+      const coreAddr = document.getElementById("cfg-core").value.trim();
+      const vaultAddr = document.getElementById("cfg-vault").value.trim();
+      const lensAddr = document.getElementById("cfg-lens").value.trim();
+      const usdcAddr = document.getElementById("cfg-usdc").value.trim();
+
+      const runner = signer || provider;
+      if (!runner) return;
+
+      coreContract = coreAddr && ethers.isAddress(coreAddr) ? new ethers.Contract(coreAddr, CORE_ABI, runner) : null;
+      vaultContract = vaultAddr && ethers.isAddress(vaultAddr) ? new ethers.Contract(vaultAddr, VAULT_ABI, runner) : null;
+      lensContract = lensAddr && ethers.isAddress(lensAddr) ? new ethers.Contract(lensAddr, LENS_ABI, runner) : null;
+      usdcContract = usdcAddr && ethers.isAddress(usdcAddr) ? new ethers.Contract(usdcAddr, ERC20_ABI, runner) : null;
+
+      if (coreContract) {
+        refreshAllData();
+      }
+    }
+
+    // Connect Wallet (MetaMask)
+    async function connectWallet() {
+      if (!window.ethereum) {
+        showToast("Veuillez installer MetaMask pour utiliser ce dashboard", "error");
+        return;
+      }
+
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        userAddress = accounts[0];
+
+        const network = await provider.getNetwork();
+        currentNetwork = network;
+
+        document.getElementById("network-name").textContent = network.chainId === 8453n ? "Base Mainnet" : network.chainId === 84532n ? "Base Sepolia" : `Chain ID: ${network.chainId}`;
+        document.getElementById("network-indicator").className = "network-dot active";
+        document.getElementById("btn-connect").innerHTML = `<i data-lucide="user-check" style="width: 14px; height: 14px;"></i> ${shortAddr(userAddress)}`;
+        lucide.createIcons();
+
+        initContracts();
+        showToast(`Connecté : ${shortAddr(userAddress)}`, "success");
+      } catch (err) {
+        console.error(err);
+        showToast("Échec de connexion MetaMask", "error");
+      }
+    }
+
+    document.getElementById("btn-connect").addEventListener("click", connectWallet);
+    document.getElementById("btn-refresh").addEventListener("click", refreshAllData);
+
+    // Refresh Data from Smart Contracts
+    async function refreshAllData() {
+      if (!coreContract) return;
+
+      try {
+        // 1. Fetch Protocol Overview
+        protocolOwner = await coreContract.owner();
+        const pendingOwner = await coreContract.pendingOwner();
+        const secMode = await coreContract.securityMode();
+        const totalLocked = await coreContract.lockedCapital();
+        const nextTradeId = await coreContract.nextTradeId();
+        const refRate = await coreContract.referralRewardRate();
+        const supraAddr = await coreContract.supra();
+
+        let vaultBal = 0n;
+        if (usdcContract && vaultContract) {
+          const vaultAddr = await vaultContract.getAddress();
+          vaultBal = await usdcContract.balanceOf(vaultAddr);
+        }
+
+        // Update Overview UI
+        document.getElementById("stat-vault-balance").textContent = `${formatUSDC(vaultBal)} USDC`;
+        document.getElementById("stat-locked-capital").textContent = `${formatUSDC(totalLocked)} USDC`;
+
+        const freeCap = vaultBal > totalLocked ? vaultBal - totalLocked : 0n;
+        document.getElementById("stat-free-capital").textContent = `Capital libre: ${formatUSDC(freeCap)} USDC`;
+
+        // Vault tab stats
+        document.getElementById("vault-total-balance").textContent = `${formatUSDC(vaultBal)} USDC`;
+        document.getElementById("vault-free-balance").textContent = `${formatUSDC(freeCap)} USDC`;
+
+        if (usdcContract && userAddress) {
+          const userUSDC = await usdcContract.balanceOf(userAddress);
+          document.getElementById("vault-wallet-balance").textContent = `${formatUSDC(userUSDC)} USDC`;
+        }
+
+        // Security Mode
+        const modeNames = ["NORMAL", "CLOSE ONLY", "PAUSED", "RECOVERY"];
+        document.getElementById("stat-security-mode").textContent = modeNames[Number(secMode)] || "INCONNU";
+        document.getElementById("disp-owner").textContent = protocolOwner;
+        document.getElementById("disp-pending-owner").textContent = pendingOwner === ethers.ZeroAddress ? "Aucun" : pendingOwner;
+        document.getElementById("disp-supra-addr").textContent = supraAddr;
+        document.getElementById("disp-referral-rate").textContent = formatPercent(refRate, 1);
+        document.getElementById("stat-total-trades").textContent = `${Number(nextTradeId) - 1} trades historiques`;
+
+        // Admin badge check
+        const badgeAdmin = document.getElementById("badge-admin-status");
+        if (userAddress && protocolOwner.toLowerCase() === userAddress.toLowerCase()) {
+          badgeAdmin.className = "badge badge-open";
+          badgeAdmin.innerHTML = `<i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Admin Connecté (Owner)`;
+        } else {
+          badgeAdmin.className = "badge badge-neutral";
+          badgeAdmin.innerHTML = `<i data-lucide="eye" style="width: 12px; height: 12px;"></i> Mode Consultation (Non-Owner)`;
+        }
+
+        // 2. Fetch Active Assets
+        const activeAssetIds = await coreContract.getActiveAssets();
+        document.getElementById("stat-active-markets").textContent = activeAssetIds.length.toString();
+
+        await renderMarketsTable(activeAssetIds);
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Erreur refresh:", err);
+      }
+    }
+
+    // Render Markets Table
+    async function renderMarketsTable(assetIds) {
+      const tbody = document.getElementById("markets-table-body");
+      if (assetIds.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 32px;">Aucun actif listé sur ce contrat. Utilisez l'onglet "Lister un Actif" pour en créer un.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+
+      for (const assetId of assetIds) {
+        try {
+          const config = await coreContract.assetConfigs(assetId);
+          const state = await coreContract.assetStates(assetId);
+          const isClosed = await coreContract.marketClosed(assetId);
+          const clGuard = await coreContract.chainlinkGuards(assetId);
+          const spreads = await coreContract.currentSpreads(assetId);
+          const borrowRates = await coreContract.currentBorrowRates(assetId);
+
+          const longOI = Number(state.openInterestLong) / 1e6;
+          const shortOI = Number(state.openInterestShort) / 1e6;
+          const totalOI = longOI + shortOI;
+          const longPct = totalOI > 0 ? ((longOI / totalOI) * 100).toFixed(0) : "50";
+          const shortPct = totalOI > 0 ? (100 - Number(longPct)).toFixed(0) : "50";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="mono font-bold">${assetId.toString()}</td>
+            <td>
+              <div style="font-weight: 700; color: #fff;">${assetId === 5500n ? "Gold (XAU/USD)" : `Asset #${assetId}`}</div>
+              <div style="font-size: 11px; color: var(--text-tertiary);">Collateral Min: ${formatUSDC(config.minTradeSize)} USDC</div>
+            </td>
+            <td>
+              ${isClosed 
+                ? `<span class="badge badge-closed"><i data-lucide="lock" style="width: 10px; height: 10px;"></i> FERMÉ</span>`
+                : `<span class="badge badge-open"><i data-lucide="check" style="width: 10px; height: 10px;"></i> OUVERT</span>`
+              }
+            </td>
+            <td class="mono">${config.minLeverage}x - ${config.maxLeverage}x</td>
+            <td>
+              <div class="skew-bar-wrapper">
+                <div class="skew-bar-labels">
+                  <span>L: ${longOI.toFixed(0)}</span>
+                  <span>S: ${shortOI.toFixed(0)}</span>
+                </div>
+                <div class="skew-bar-track">
+                  <div class="skew-bar-long" style="width: ${longPct}%" title="Long: ${longPct}%"></div>
+                  <div class="skew-bar-short" style="width: ${shortPct}%" title="Short: ${shortPct}%"></div>
+                </div>
+              </div>
+            </td>
+            <td class="mono">
+              <div>L: ${formatPercent(spreads.longSpread, 3)}</div>
+              <div style="color: var(--text-tertiary);">S: ${formatPercent(spreads.shortSpread, 3)}</div>
+            </td>
+            <td class="mono">
+              <div>L: ${formatPercent(borrowRates.longRate, 4)}</div>
+              <div style="color: var(--text-tertiary);">S: ${formatPercent(borrowRates.shortRate, 4)}</div>
+            </td>
+            <td>
+              ${clGuard.feed !== ethers.ZeroAddress 
+                ? `<span class="badge badge-neutral" title="Feed: ${clGuard.feed}"><i data-lucide="shield" style="width: 10px; height: 10px;"></i> ±${(Number(clGuard.maxDeviation)/1e4).toFixed(2)}%</span>`
+                : `<span class="badge badge-closed">Désactivé</span>`
+              }
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn btn-secondary btn-sm" onclick="toggleMarketStatus(${assetId}, ${!isClosed})" title="${isClosed ? 'Ouvrir le marché' : 'Fermer le marché'}">
+                  <i data-lucide="${isClosed ? 'unlock' : 'lock'}" style="width: 12px; height: 12px;"></i>
+                  ${isClosed ? "Ouvrir" : "Fermer"}
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="openEditModal(${assetId})" title="Modifier paramètres">
+                  <i data-lucide="settings" style="width: 12px; height: 12px;"></i>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="openGuardModal(${assetId})" title="Garde-Fou Chainlink">
+                  <i data-lucide="shield" style="width: 12px; height: 12px;"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        } catch (e) {
+          console.error("Asset row error:", e);
+        }
+      }
+    }
+
+    // Toggle Market Open / Closed (Admin)
+    window.toggleMarketStatus = async function(assetId, setClosed) {
+      if (!coreContract || !signer) {
+        showToast("Veuillez connecter votre wallet MetaMask Admin", "error");
+        return;
+      }
+      try {
+        showToast(`Transaction envoyée : ${setClosed ? 'Fermeture' : 'Ouverture'} du marché...`, "info");
+        const tx = await coreContract.setMarketClosed(assetId, setClosed);
+        await tx.wait(1);
+        showToast(`Marché #${assetId} ${setClosed ? 'FERMÉ' : 'OUVERT'} avec succès !`, "success");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec : ${err.reason || err.message}`, "error");
+      }
+    };
+
+    // Preset configurations for List Asset
+    document.getElementById("btn-preset-gold").addEventListener("click", () => {
+      document.getElementById("f-assetId").value = "5500";
+      document.getElementById("f-minLev").value = "5";
+      document.getElementById("f-maxLev").value = "20";
+      document.getElementById("f-minTradeSize").value = "10";
+      document.getElementById("f-commission").value = "0.10";
+      document.getElementById("f-maxTraderOI").value = "2500";
+      document.getElementById("f-maxOpenInterest").value = "50000";
+      document.getElementById("f-maxSkew").value = "5000";
+      document.getElementById("f-minSpread").value = "0.03";
+      document.getElementById("f-maxSpread").value = "0.15";
+      document.getElementById("f-spreadVirtualOI").value = "10000";
+      document.getElementById("f-maxSpreadPenalty").value = "0.12";
+      document.getElementById("f-maxSpreadDiscount").value = "0.01";
+      document.getElementById("f-baseBorrow").value = "0.0023";
+      document.getElementById("f-maxBorrow").value = "0.0114";
+      document.getElementById("f-borrowVirtualOI").value = "10000";
+      document.getElementById("f-recoveryDays").value = "20";
+      document.getElementById("f-maxProfitRate").value = "8.0";
+      document.getElementById("f-lockedCapitalRate").value = "12.0";
+      document.getElementById("f-liquidationThreshold").value = "95.0";
+      showToast("Modèle Or (XAU/USD) chargé !", "info");
+    });
+
+    document.getElementById("btn-preset-crypto").addEventListener("click", () => {
+      document.getElementById("f-assetId").value = "0"; // BTC
+      document.getElementById("f-minLev").value = "2";
+      document.getElementById("f-maxLev").value = "50";
+      document.getElementById("f-minTradeSize").value = "10";
+      document.getElementById("f-commission").value = "0.08";
+      document.getElementById("f-maxTraderOI").value = "10000";
+      document.getElementById("f-maxOpenInterest").value = "100000";
+      document.getElementById("f-maxSkew").value = "15000";
+      document.getElementById("f-minSpread").value = "0.04";
+      document.getElementById("f-maxSpread").value = "0.25";
+      document.getElementById("f-spreadVirtualOI").value = "25000";
+      document.getElementById("f-maxSpreadPenalty").value = "0.20";
+      document.getElementById("f-maxSpreadDiscount").value = "0.02";
+      document.getElementById("f-baseBorrow").value = "0.0035";
+      document.getElementById("f-maxBorrow").value = "0.0150";
+      document.getElementById("f-borrowVirtualOI").value = "25000";
+      document.getElementById("f-recoveryDays").value = "14";
+      document.getElementById("f-maxProfitRate").value = "10.0";
+      document.getElementById("f-lockedCapitalRate").value = "15.0";
+      document.getElementById("f-liquidationThreshold").value = "90.0";
+      showToast("Modèle Crypto Majeure chargé !", "info");
+    });
+
+    document.getElementById("btn-preset-forex").addEventListener("click", () => {
+      document.getElementById("f-assetId").value = "10"; // EUR/USD
+      document.getElementById("f-minLev").value = "10";
+      document.getElementById("f-maxLev").value = "50";
+      document.getElementById("f-minTradeSize").value = "20";
+      document.getElementById("f-commission").value = "0.05";
+      document.getElementById("f-maxTraderOI").value = "5000";
+      document.getElementById("f-maxOpenInterest").value = "100000";
+      document.getElementById("f-maxSkew").value = "10000";
+      document.getElementById("f-minSpread").value = "0.02";
+      document.getElementById("f-maxSpread").value = "0.08";
+      document.getElementById("f-spreadVirtualOI").value = "20000";
+      document.getElementById("f-maxSpreadPenalty").value = "0.06";
+      document.getElementById("f-maxSpreadDiscount").value = "0.01";
+      document.getElementById("f-baseBorrow").value = "0.0015";
+      document.getElementById("f-maxBorrow").value = "0.0080";
+      document.getElementById("f-borrowVirtualOI").value = "20000";
+      document.getElementById("f-recoveryDays").value = "30";
+      document.getElementById("f-maxProfitRate").value = "5.0";
+      document.getElementById("f-lockedCapitalRate").value = "8.0";
+      document.getElementById("f-liquidationThreshold").value = "95.0";
+      showToast("Modèle Forex chargé !", "info");
+    });
+
+    // Form Submit: List Asset
+    document.getElementById("form-list-asset").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!coreContract || !signer) {
+        showToast("Veuillez connecter votre wallet MetaMask", "error");
+        return;
+      }
+
+      try {
+        const assetId = BigInt(document.getElementById("f-assetId").value);
+        const config = {
+          minLeverage: Number(document.getElementById("f-minLev").value),
+          maxLeverage: Number(document.getElementById("f-maxLev").value),
+          minTradeSize: BigInt(Math.round(Number(document.getElementById("f-minTradeSize").value) * 1e6)),
+          commissionRate: Math.round((Number(document.getElementById("f-commission").value) / 100) * 1e6),
+          maxTraderOI: BigInt(Math.round(Number(document.getElementById("f-maxTraderOI").value) * 1e6)),
+          maxOpenInterest: BigInt(Math.round(Number(document.getElementById("f-maxOpenInterest").value) * 1e6)),
+          maxSkew: BigInt(Math.round(Number(document.getElementById("f-maxSkew").value) * 1e6)),
+          minSpread: Math.round((Number(document.getElementById("f-minSpread").value) / 100) * 1e6),
+          maxSpread: Math.round((Number(document.getElementById("f-maxSpread").value) / 100) * 1e6),
+          spreadVirtualOI: BigInt(Math.round(Number(document.getElementById("f-spreadVirtualOI").value) * 1e6)),
+          maxSpreadPenalty: Math.round((Number(document.getElementById("f-maxSpreadPenalty").value) / 100) * 1e6),
+          maxSpreadDiscount: Math.round((Number(document.getElementById("f-maxSpreadDiscount").value) / 100) * 1e6),
+          baseBorrowRateHourly: Math.round((Number(document.getElementById("f-baseBorrow").value) / 100) * 1e6),
+          maxBorrowRateHourly: Math.round((Number(document.getElementById("f-maxBorrow").value) / 100) * 1e6),
+          borrowVirtualOI: BigInt(Math.round(Number(document.getElementById("f-borrowVirtualOI").value) * 1e6)),
+          recoveryTimeDays: Number(document.getElementById("f-recoveryDays").value),
+          maxProfitRate: Math.round((Number(document.getElementById("f-maxProfitRate").value) / 100) * 1e6),
+          lockedCapitalRate: Math.round((Number(document.getElementById("f-lockedCapitalRate").value) / 100) * 1e6),
+          liquidationThreshold: Math.round((Number(document.getElementById("f-liquidationThreshold").value) / 100) * 1e6)
+        };
+
+        showToast("Signature de la transaction de listing...", "info");
+        const tx = await coreContract.listAsset(assetId, config);
+        await tx.wait(1);
+
+        showToast(`Marché #${assetId} listé avec succès sur BrokexCore !`, "success");
+        document.querySelector('[data-tab="tab-markets"]').click();
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec du listing : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Edit Modal Open & Save
+    window.openEditModal = async function(assetId) {
+      if (!coreContract) return;
+      try {
+        const config = await coreContract.assetConfigs(assetId);
+        document.getElementById("edit-assetId").value = assetId.toString();
+        document.getElementById("modal-edit-title").textContent = `Modifier Marché #${assetId}`;
+
+        document.getElementById("edit-minLev").value = config.minLeverage;
+        document.getElementById("edit-maxLev").value = config.maxLeverage;
+        document.getElementById("edit-minTradeSize").value = Number(config.minTradeSize) / 1e6;
+        document.getElementById("edit-commission").value = (Number(config.commissionRate) / 1e4).toFixed(2);
+        document.getElementById("edit-maxTraderOI").value = Number(config.maxTraderOI) / 1e6;
+        document.getElementById("edit-maxOpenInterest").value = Number(config.maxOpenInterest) / 1e6;
+        document.getElementById("edit-maxSkew").value = Number(config.maxSkew) / 1e6;
+        document.getElementById("edit-minSpread").value = (Number(config.minSpread) / 1e4).toFixed(3);
+        document.getElementById("edit-maxSpread").value = (Number(config.maxSpread) / 1e4).toFixed(3);
+        document.getElementById("edit-spreadVirtualOI").value = Number(config.spreadVirtualOI) / 1e6;
+        document.getElementById("edit-baseBorrow").value = (Number(config.baseBorrowRateHourly) / 1e4).toFixed(4);
+        document.getElementById("edit-maxBorrow").value = (Number(config.maxBorrowRateHourly) / 1e4).toFixed(4);
+        document.getElementById("edit-borrowVirtualOI").value = Number(config.borrowVirtualOI) / 1e6;
+        document.getElementById("edit-recoveryDays").value = config.recoveryTimeDays;
+        document.getElementById("edit-maxProfitRate").value = (Number(config.maxProfitRate) / 1e4).toFixed(1);
+        document.getElementById("edit-lockedCapitalRate").value = (Number(config.lockedCapitalRate) / 1e4).toFixed(1);
+        document.getElementById("edit-liquidationThreshold").value = (Number(config.liquidationThreshold) / 1e4).toFixed(1);
+
+        document.getElementById("modal-edit-asset").classList.add("open");
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    document.getElementById("form-edit-asset").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const assetId = BigInt(document.getElementById("edit-assetId").value);
+      try {
+        const config = {
+          minLeverage: Number(document.getElementById("edit-minLev").value),
+          maxLeverage: Number(document.getElementById("edit-maxLev").value),
+          minTradeSize: BigInt(Math.round(Number(document.getElementById("edit-minTradeSize").value) * 1e6)),
+          commissionRate: Math.round((Number(document.getElementById("edit-commission").value) / 100) * 1e6),
+          maxTraderOI: BigInt(Math.round(Number(document.getElementById("edit-maxTraderOI").value) * 1e6)),
+          maxOpenInterest: BigInt(Math.round(Number(document.getElementById("edit-maxOpenInterest").value) * 1e6)),
+          maxSkew: BigInt(Math.round(Number(document.getElementById("edit-maxSkew").value) * 1e6)),
+          minSpread: Math.round((Number(document.getElementById("edit-minSpread").value) / 100) * 1e6),
+          maxSpread: Math.round((Number(document.getElementById("edit-maxSpread").value) / 100) * 1e6),
+          spreadVirtualOI: BigInt(Math.round(Number(document.getElementById("edit-spreadVirtualOI").value) * 1e6)),
+          maxSpreadPenalty: 1200,
+          maxSpreadDiscount: 100,
+          baseBorrowRateHourly: Math.round((Number(document.getElementById("edit-baseBorrow").value) / 100) * 1e6),
+          maxBorrowRateHourly: Math.round((Number(document.getElementById("edit-maxBorrow").value) / 100) * 1e6),
+          borrowVirtualOI: BigInt(Math.round(Number(document.getElementById("edit-borrowVirtualOI").value) * 1e6)),
+          recoveryTimeDays: Number(document.getElementById("edit-recoveryDays").value),
+          maxProfitRate: Math.round((Number(document.getElementById("edit-maxProfitRate").value) / 100) * 1e6),
+          lockedCapitalRate: Math.round((Number(document.getElementById("edit-lockedCapitalRate").value) / 100) * 1e6),
+          liquidationThreshold: Math.round((Number(document.getElementById("edit-liquidationThreshold").value) / 100) * 1e6)
+        };
+
+        showToast("Signature de la mise à jour...", "info");
+        const tx = await coreContract.updateAssetConfig(assetId, config);
+        await tx.wait(1);
+        showToast("Configuration du marché mise à jour !", "success");
+        document.getElementById("modal-edit-asset").classList.remove("open");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec mise à jour : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Chainlink Guard Modal
+    window.openGuardModal = async function(assetId) {
+      if (!coreContract) return;
+      try {
+        const guard = await coreContract.chainlinkGuards(assetId);
+        document.getElementById("cl-assetId").value = assetId.toString();
+        document.getElementById("modal-guard-title").textContent = `Garde-Fou Chainlink - Marché #${assetId}`;
+        document.getElementById("cl-feed-addr").value = guard.feed === ethers.ZeroAddress ? "" : guard.feed;
+        document.getElementById("cl-max-deviation").value = guard.maxDeviation === 0 ? "0.75" : (Number(guard.maxDeviation) / 1e4).toFixed(2);
+        document.getElementById("modal-chainlink-guard").classList.add("open");
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    document.getElementById("form-chainlink-guard").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const assetId = BigInt(document.getElementById("cl-assetId").value);
+      const feedAddr = document.getElementById("cl-feed-addr").value.trim() || ethers.ZeroAddress;
+      const deviation = Math.round((Number(document.getElementById("cl-max-deviation").value) / 100) * 1e6);
+
+      try {
+        showToast("Configuration du garde-fou Chainlink...", "info");
+        const tx = await coreContract.setChainlinkGuard(assetId, feedAddr, deviation);
+        await tx.wait(1);
+        showToast("Garde-Fou Chainlink enregistré !", "success");
+        document.getElementById("modal-chainlink-guard").classList.remove("open");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec configuration garde-fou : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Vault: Approve USDC
+    document.getElementById("btn-approve-usdc").addEventListener("click", async () => {
+      if (!usdcContract || !vaultContract || !signer) {
+        showToast("Connectez MetaMask et vérifiez les adresses USDC / Vault", "error");
+        return;
+      }
+      try {
+        const vaultAddr = await vaultContract.getAddress();
+        showToast("Approbation USDC en cours...", "info");
+        const tx = await usdcContract.approve(vaultAddr, ethers.MaxUint256);
+        await tx.wait(1);
+        showToast("USDC approuvé avec succès pour la Vault !", "success");
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec d'approbation : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Vault: Deposit
+    document.getElementById("btn-deposit-vault").addEventListener("click", async () => {
+      if (!vaultContract || !signer) {
+        showToast("Veuillez connecter votre wallet", "error");
+        return;
+      }
+      const amountVal = Number(document.getElementById("v-deposit-amount").value);
+      if (!amountVal || amountVal <= 0) {
+        showToast("Entrez un montant valide", "error");
+        return;
+      }
+      try {
+        const amount = BigInt(Math.round(amountVal * 1e6));
+        showToast("Dépôt dans la Vault en cours...", "info");
+        const tx = await vaultContract.deposit(amount);
+        await tx.wait(1);
+        showToast("Dépôt réussi dans BrokexVault !", "success");
+        document.getElementById("v-deposit-amount").value = "";
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec de dépôt : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Vault: Withdraw
+    document.getElementById("btn-withdraw-vault").addEventListener("click", async () => {
+      if (!vaultContract || !signer) {
+        showToast("Veuillez connecter votre wallet", "error");
+        return;
+      }
+      const amountVal = Number(document.getElementById("v-withdraw-amount").value);
+      if (!amountVal || amountVal <= 0) {
+        showToast("Entrez un montant valide", "error");
+        return;
+      }
+      try {
+        const amount = BigInt(Math.round(amountVal * 1e6));
+        showToast("Retrait de la Vault en cours...", "info");
+        const tx = await vaultContract.withdraw(amount);
+        await tx.wait(1);
+        showToast("Retrait réussi depuis la Vault !", "success");
+        document.getElementById("v-withdraw-amount").value = "";
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec de retrait : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Governance: Set Security Mode
+    document.getElementById("btn-set-sec-mode").addEventListener("click", async () => {
+      if (!coreContract || !signer) return;
+      const mode = Number(document.getElementById("g-security-mode").value);
+      try {
+        showToast("Mise à jour du mode de sécurité...", "info");
+        const tx = await coreContract.setSecurityMode(mode);
+        await tx.wait(1);
+        showToast("Mode de sécurité mis à jour !", "success");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Governance: Transfer Ownership
+    document.getElementById("btn-transfer-owner").addEventListener("click", async () => {
+      if (!coreContract || !signer) return;
+      const newOwner = document.getElementById("g-new-owner").value.trim();
+      if (!ethers.isAddress(newOwner)) {
+        showToast("Adresse invalide", "error");
+        return;
+      }
+      try {
+        showToast("Initiation du transfert de propriété...", "info");
+        const tx = await coreContract.transferOwnership(newOwner);
+        await tx.wait(1);
+        showToast(`Transfert initié vers ${shortAddr(newOwner)} !`, "success");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Governance: Accept Ownership
+    document.getElementById("btn-accept-owner").addEventListener("click", async () => {
+      if (!coreContract || !signer) return;
+      try {
+        showToast("Acceptation de la propriété...", "info");
+        const tx = await coreContract.acceptOwnership();
+        await tx.wait(1);
+        showToast("Vous êtes maintenant le nouveau Propriétaire officiel !", "success");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Governance: Set Referral Rate
+    document.getElementById("btn-set-ref-rate").addEventListener("click", async () => {
+      if (!coreContract || !signer) return;
+      const rateVal = Number(document.getElementById("g-ref-rate").value);
+      if (isNaN(rateVal) || rateVal < 0 || rateVal > 100) {
+        showToast("Entrez un pourcentage entre 0 et 100", "error");
+        return;
+      }
+      try {
+        const rate = BigInt(Math.round((rateVal / 100) * 1e6));
+        showToast("Mise à jour du taux referral...", "info");
+        const tx = await coreContract.setReferralRewardRate(rate);
+        await tx.wait(1);
+        showToast("Taux de parrainage mis à jour !", "success");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // Governance: Link Vault to Core (setPrimaryCore)
+    document.getElementById("btn-set-primary-core").addEventListener("click", async () => {
+      if (!vaultContract || !signer) return;
+      const coreAddr = document.getElementById("g-link-core-addr").value.trim();
+      if (!ethers.isAddress(coreAddr)) {
+        showToast("Adresse de Core invalide", "error");
+        return;
+      }
+      try {
+        showToast("Liaison Vault -> Core...", "info");
+        const tx = await vaultContract.setPrimaryCore(coreAddr);
+        await tx.wait(1);
+        showToast("BrokexVault liée au nouveau Core avec succès !", "success");
+        refreshAllData();
+      } catch (err) {
+        console.error(err);
+        showToast(`Échec liaison : ${err.reason || err.message}`, "error");
+      }
+    });
+
+    // UI Tab Navigation
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        const targetId = btn.getAttribute("data-tab");
+        document.getElementById(targetId).classList.add("active");
+      });
+    });
+
+    document.getElementById("btn-go-new-asset").addEventListener("click", () => {
+      document.querySelector('[data-tab="tab-new-asset"]').click();
+    });
+
+    // Modal Close Triggers
+    document.querySelectorAll("[data-close-modal]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const modalId = btn.getAttribute("data-close-modal");
+        document.getElementById(modalId).classList.remove("open");
+      });
+    });
+
+    // Auto-init on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      loadSavedAddresses();
+      if (window.ethereum) {
+        connectWallet();
+      }
+    });
+  </script>
+</body>
+</html>
